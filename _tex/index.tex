@@ -178,9 +178,9 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
-  pdftitle={La Palma Earthquakes},
-  pdfauthor={Steve Purves; Rowan Cockett},
-  pdfkeywords={La Palma, Earthquakes},
+  pdftitle={Economic Complexity of Australian Regions},
+  pdfauthor={Hamish Gamble; Sharif Rasel},
+  pdfkeywords={Economic Complexity, Advanced Manufacturing},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -189,49 +189,146 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-\journalname{Earth and Space Science}
 
 \draftfalse
 
 \begin{document}
-\title{La Palma Earthquakes}
+\title{Economic Complexity of Australian Regions}
 
-\authors{Steve Purves\affil{1}, Rowan Cockett\affil{1}}
-\affiliation{1}{Curvenote, }
-\correspondingauthor{Steve Purves}{steve@curvenote.com}
-
-
-\begin{abstract}
-In September 2021, a significant jump in seismic activity on the island
-of La Palma (Canary Islands, Spain) signaled the start of a volcanic
-crisis that still continues at the time of writing. Earthquake data is
-continually collected and published by the Instituto Geográphico
-Nacional (IGN). \ldots{}
-\end{abstract}
-
-\section*{Plain Language Summary}
-Earthquake data for the island of La Palma from the September 2021
-eruption is found \ldots{}
+\authors{Hamish Gamble\affil{1}, Sharif Rasel\affil{1}}
+\affiliation{1}{Flinders University, }
+\correspondingauthor{Hamish Gamble}{hamish.gamble@flinders.edu.au}
 
 
 
 
-\section{Introduction}\label{introduction}
+
+
+
+\subsection{Introduction}\label{introduction}
+
+\subsection{Literature Review}\label{literature-review}
+
+César A. Hidalgo \& Hausmann (2009) introduced the concept of economic
+complexity as a means of quantifying and explaining differences in the
+economic development trajectory of different countries. Their method
+used bilateral trade data to identify the network structure of countries
+and the products they export and built on the concept of relatedness
+introduced in C. A. Hidalgo et al. (2007). Economic complexity has been
+shown to be predictor of
+
+Relatedness has since been applied across industry (Neffke \& Henning,
+2012), research areas (Guevara et al., 2016), occupation (Muneepeerakul
+et al., 2013) and technology (patents) (Kogler et al., 2013).
+
+The relatedness approach has also been used to quantify economic
+complexity across cities, states, and regions, using employment
+data{[}Fritz \& Manduca (2021); @ecnz; Chávez et al. (2017){]}, business
+counts(Gao \& Zhou, 2018), patent classifications (Balland \& Boschma,
+2021), and interstate and international trade data (Reynolds et al.,
+2018).
+
+Despite differences in data sources, the method for calculating economic
+complexity in the literature is relatively standard. The presence of an
+activity in a region is often identified using a location quotient
+method, such that an activity is said to be present in a region if:
+
+\[\frac{X_a^r/\sum_{a}X_a^r}{\sum_{r}X_a^r/\sum_{r,a}X_a^r} \geq 1\]
+
+Where \(X\) is the measure of an activity \(a\) in region \(r\) - such
+as the level of employment in an occupation in a city, or the number of
+businesses classified in an industry in a province, or the value of
+exports of a product from a country. The location quotient method
+creates a binary matrix \(M\) with \(a\) rows and \(r\) columns.
+
+\begin{itemize}
+\tightlist
+\item
+  In a study of the economic complexity of US regions, Fritz \& Manduca
+  (2021) use metropolitan areas as the basis for calculations.
+\item
+  Metropolitan areas in the United States are defined such that jobs
+  within a given area are held by residents who live in that area.
+\item
+  Metropolitan areas have a population of at least 50,000 people. The
+  smallest MSA was estimated to have a 2023 population of 57,700 (about
+  0.015\% of US population).
+\item
+\end{itemize}
+
+\subsubsection{Small (n) areas}\label{small-n-areas}
+
+\begin{itemize}
+\item
+  In New Zealand, Davies \& Maré (2021) use weighted correlations of
+  local employment shares. Regions range from a population of 1,434 to
+  573,150 with a mean population of 29,947 and median population of
+  6,952. Employment is measured as an industry-occupation pair.
+\item
+  C. A. Hidalgo et al. (2007) and others have focused on the
+  co-occurrence of revealed comparative advantage indices, derived from
+  a location quotient. The location quotient is measured as:
+
+  \[
+  LQ = \frac{X_r^a/X_r}{X^a/X}
+  \]
+\item
+  As such, small values of \(\frac{X^a}{X}\) can exacerbate any
+  measurement error in the numerator. Additionally, the binary nature of
+  measuring revealed comparative advantage when the location quotient is
+  greater than 1, results in a discontinuity at \(LQ = 1\).
+\item
+  Differences in relationship between complexity and relatedness on
+  indicators may be entirely context dependent.
+\end{itemize}
+
+\subsection{Data \& Methods}\label{sec-data-methods}
+
+\subsubsection{Data}\label{data}
+
+\begin{itemize}
+\item
+  Calculate economic complexity indicators for Australian regions using
+  employment data from the 2021 Census.
+\item
+  Regions classified by Statistical Areas Level 3 (SA3)
+\item
+  Economic activity classified by ANZSIC industry division and ANZSCO
+  major group
+\end{itemize}
 
 \textsubscript{Source:
 \href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
 Notebook}}
 
-\phantomsection\label{cell-fig-timeline}
+\begin{itemize}
+\item
+  We exclude individuals who identify their place of work as a Migratory
+  - Offshore - Shipping region or as No Fixed Address. Employment in
+  these regions totals 497,913 or about 4\% of the total sample.
+\item
+  Following Davies \& Maré (2021), employment is aggregated into
+  industry-occupation pairs, allowing for differentiation between, for
+  example, managers working in agriculture, forestry, and fishing, and
+  managers working in retail trade.
+\item
+  Dataset covers 340 regions and 152 industry-occupations.
+  Figure~\ref{fig-employment-density} shows the presence of any level of
+  employment within a region and industry-occupation. As can be seen,
+  there is a high level of employment density across our data.
+\end{itemize}
+
+\phantomsection\label{cell-fig-employment-density}
 \begin{figure}[H]
 
 \centering{
 
-\includegraphics{index_files/figure-pdf/fig-timeline-1.pdf}
+\includegraphics{index_files/figure-pdf/fig-employment-density-1.pdf}
 
 }
 
-\caption{\label{fig-timeline}Timeline of recent earthquakes on La Palma}
+\caption{\label{fig-employment-density}Presence of employment across
+regions and industry-occupations.}
 
 \end{figure}%
 
@@ -239,112 +336,203 @@ Notebook}}
 \href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
 Notebook}}
 
+\subsubsection{Method}\label{method}
+
+This section follows the method of Davies \& Maré (2021) using
+correlations of employment shares rather than a location quotient
+method.
+
+\paragraph{Relatedness}\label{relatedness}
+
+Activities are related based on the weighted correlation between the
+local activity share of employment, weighted by each regions share of
+total employment.
+
+\begin{itemize}
+\tightlist
+\item
+  First calculate the weighted covariance
+\end{itemize}
+
+\[
+cov_{aa} = \sum_{c \in C} (\frac{E_c^{a_i}}{E_c}-\frac{E^{a_i}}{E})(\frac{E_c^{a_j}}{E_c}-\frac{E^{a_j}}{E})
+\]
+
+\begin{itemize}
+\item
+  Divide the weighted covariance by the city share-weighted standard
+  deviations of the local activity shares to get the weighted
+  correlation.
+\item
+  Map the correlation to the interval \([0,1]\) such that:
+
+  \[
+  r_{aa} = \frac{1}{2}(cor(a_i, a_j) + 1)
+  \]
+\end{itemize}
+
+City relatedness is calculated symmetrically such that:
+
+\[
+r_{cc} = \frac{1}{2}(cor(c_i, c_j) + 1)
+\]
+
+\paragraph{Complexity}\label{complexity}
+
+Activity complexity is defined by the second eigenvector of the matrix
+\(r_{aa}\) and city complexity is defined by the second eigenvector of
+the matrix \(r_{cc}\). The sign of activity complexity is set such that
+it is positively correlated with the weighted mean size of cities that
+contain activity \(a\), and the sign of city complexity is set such that
+it is positively correlated with the local share-weighted mean
+complexity of activities in city \(c\)
+
 \textsubscript{Source:
 \href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
 Notebook}}
 
-Based on data up to and including 1971, eruptions on La Palma happen
-every 79.8 years on average.
+\subsection{Results}\label{results}
 
-Studies of the magma systems feeding the volcano, such as Marrero et al.
-(2019), have proposed that there are two main magma reservoirs feeding
-the Cumbre Vieja volcano; one in the mantle (30-40km depth) which
-charges and in turn feeds a shallower crustal reservoir (10-20km depth).
+\textsubscript{Source:
+\href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
+Notebook}}
 
-Eight eruptions have been recorded since the late 1400s
-(Figure~\ref{fig-timeline}).
+Figure~\ref{fig-gcc-complexity} shows the regional complexity of SA3
+regions in Australian Greater Capital City Areas based on 2021 Census
+data. Complexity is highest in capital cities and surrounding regions.
 
-Data and methods are discussed in Section~\ref{sec-data-methods}.
-
-Let \(x\) denote the number of eruptions in a year. Then, \(x\) can be
-modeled by a Poisson distribution
-
-\begin{equation}\phantomsection\label{eq-poisson}{
-p(x) = \frac{e^{-\lambda} \lambda^{x}}{x !}
-}\end{equation}
-
-where \(\lambda\) is the rate of eruptions per year. Using
-Equation~\ref{eq-poisson}, the probability of an eruption in the next
-\(t\) years can be calculated.
-
-\begin{longtable}[]{@{}ll@{}}
-\caption{Recent historic eruptions on La
-Palma}\label{tbl-history}\tabularnewline
-\toprule\noalign{}
-Name & Year \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-Name & Year \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Current & 2021 \\
-Teneguía & 1971 \\
-Nambroque & 1949 \\
-El Charco & 1712 \\
-Volcán San Antonio & 1677 \\
-Volcán San Martin & 1646 \\
-Tajuya near El Paso & 1585 \\
-Montaña Quemada & 1492 \\
-\end{longtable}
-
-Table~\ref{tbl-history} summarises the eruptions recorded since the
-colonization of the islands by Europeans in the late 1400s.
-
-\begin{figure}
-
-\centering{
-
-\includegraphics{images/la-palma-map.png}
-
-}
-
-\caption{\label{fig-map}Map of La Palma}
-
-\end{figure}%
-
-La Palma is one of the west most islands in the Volcanic Archipelago of
-the Canary Islands (Figure~\ref{fig-map}).
-
+\phantomsection\label{cell-fig-gcc-complexity}
 \begin{figure}[H]
 
 \centering{
 
-\includegraphics{index_files/figure-latex/notebooks-explore-earthquakes-fig-spatial-plot-output-1.png}
+\includegraphics{index_files/figure-pdf/fig-gcc-complexity-1.pdf}
 
 }
 
-\caption{\label{fig-spatial-plot}Locations of earthquakes on La Palma
-since 2017}
+\caption{\label{fig-gcc-complexity}Complexity of Australian Greater
+Capital City Areas}
 
 \end{figure}%
 
 \textsubscript{Source:
-\href{https://aiti-flinders.github.io/sirp-complexity/notebooks/explore-earthquakes-preview.html\#cell-fig-spatial-plot}{Explore
-Earthquakes}}
+\href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
+Notebook}}
 
-Figure~\ref{fig-spatial-plot} shows the location of recent Earthquakes
-on La Palma.
+\subsubsection{Spatial Correlation}\label{spatial-correlation}
 
-\section{Data \& Methods}\label{sec-data-methods}
+\begin{itemize}
+\tightlist
+\item
+  Is economic complexity correlated across space?
+\end{itemize}
 
-\section{Conclusion}\label{conclusion}
+\textsubscript{Source:
+\href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
+Notebook}}
 
-\section*{References}\label{references}
-\addcontentsline{toc}{section}{References}
+\begin{itemize}
+\tightlist
+\item
+  Global Moran's I = 0.5007756 with a p.value of 0.
+\end{itemize}
+
+\phantomsection\label{cell-fig-complexity-hot-spots}
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics{index_files/figure-pdf/fig-complexity-hot-spots-1.pdf}
+
+}
+
+\caption{\label{fig-complexity-hot-spots}City Complexity hot spots
+(based on local Moran's I p.values)}
+
+\end{figure}%
+
+\textsubscript{Source:
+\href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
+Notebook}}
+
+\subsection{Conclusion}\label{conclusion}
+
+\subsection*{References}\label{references}
+\addcontentsline{toc}{subsection}{References}
 
 \phantomsection\label{refs}
 \begin{CSLReferences}{1}{0}
 \vspace{1em}
 
-\bibitem[\citeproctext]{ref-marrero2019}
-Marrero, J., García, A., Berrocoso, M., Llinares, Á., Rodríguez-Losada,
-A., \& Ortiz, R. (2019). Strategies for the development of volcanic
-hazard maps in monogenetic volcanic fields: The example of {La} {Palma}
-({Canary} {Islands}). \emph{Journal of Applied Volcanology}, \emph{8}.
-\url{https://doi.org/10.1186/s13617-019-0085-5}
+\bibitem[\citeproctext]{ref-balland2021}
+Balland, P.-A., \& Boschma, R. (2021). Mapping the potentials of regions
+in Europe to contribute to new knowledge production in Industry 4.0
+technologies. \emph{Regional Studies}, \emph{55}(10-11), 1652--1666.
+\url{https://doi.org/10.1080/00343404.2021.1900557}
+
+\bibitem[\citeproctext]{ref-ecmexico}
+Chávez, J. C., Mosqueda, M. T., \& Gómez-Zaldívar, M. (2017). Economic
+complexity and regional growth performance: Evidence from the mexican
+economy. \emph{Review of Regional Studies}, \emph{47}(2), 201--219.
+\url{https://doi.org/10.52324/001c.8023}
+
+\bibitem[\citeproctext]{ref-ecnz}
+Davies, B., \& Maré, D. C. (2021). Relatedness, complexity and local
+growth. \emph{Regional Studies}, \emph{55}(3), 479--494.
+\url{https://doi.org/10.1080/00343404.2020.1802418}
+
+\bibitem[\citeproctext]{ref-ecus}
+Fritz, B. S. L., \& Manduca, R. A. (2021). The economic complexity of US
+metropolitan areas. \emph{Regional Studies}, \emph{55}(7), 1299--1310.
+\url{https://doi.org/10.1080/00343404.2021.1884215}
+
+\bibitem[\citeproctext]{ref-ecchina}
+Gao, J., \& Zhou, T. (2018). Quantifying china's regional economic
+complexity. \emph{Physica A: Statistical Mechanics and Its
+Applications}, \emph{492}, 1591--1603.
+https://doi.org/\url{https://doi.org/10.1016/j.physa.2017.11.084}
+
+\bibitem[\citeproctext]{ref-guevara2016}
+Guevara, M. R., Hartmann, D., Aristarán, M., Mendoza, M., \& Hidalgo, C.
+A. (2016). The research space: using career paths to predict the
+evolution of the research output of individuals, institutions, and
+nations. \emph{Scientometrics}, \emph{109}(3), 1695--1709.
+\url{https://doi.org/10.1007/s11192-016-2125-9}
+
+\bibitem[\citeproctext]{ref-hidalgo2009}
+Hidalgo, César A., \& Hausmann, R. (2009). The building blocks of
+economic complexity. \emph{Proceedings of the National Academy of
+Sciences}, \emph{106}(26), 10570--10575.
+\url{https://doi.org/10.1073/pnas.0900943106}
+
+\bibitem[\citeproctext]{ref-hidalgo2007}
+Hidalgo, C. A., Klinger, B., Barabaśi, A.-L., \& Hausmann, R. (2007).
+The Product Space Conditions the Development of Nations. \emph{Science},
+\emph{317}(5837), 482--487.
+\url{https://doi.org/10.1126/science.1144581}
+
+\bibitem[\citeproctext]{ref-kogler2013}
+Kogler, D. F., Rigby, D. L., \& Tucker, I. (2013). Mapping Knowledge
+Space and Technological Relatedness in US Cities. \emph{European
+Planning Studies}, \emph{21}(9), 1374--1391.
+\url{https://doi.org/10.1080/09654313.2012.755832}
+
+\bibitem[\citeproctext]{ref-muneepeerakul2013}
+Muneepeerakul, R., Lobo, J., Shutters, S. T., Goméz-Liévano, A., \&
+Qubbaj, M. R. (2013). Urban Economies and Occupation Space: Can They Get
+{``}There{''} from {``}Here{''}? \emph{PLoS ONE}, \emph{8}(9), e73676.
+\url{https://doi.org/10.1371/journal.pone.0073676}
+
+\bibitem[\citeproctext]{ref-neffke2012}
+Neffke, F., \& Henning, M. (2012). Skill relatedness and firm
+diversification. \emph{Strategic Management Journal}, \emph{34}(3),
+297--316. \url{https://doi.org/10.1002/smj.2014}
+
+\bibitem[\citeproctext]{ref-ecaus}
+Reynolds, C., Agrawal, M., Lee, I., Zhan, C., Li, J., Taylor, P., et al.
+(2018). A sub-national economic complexity analysis of australia's
+states and territories. \emph{Regional Studies}, \emph{52}(5), 715--726.
+\url{https://doi.org/10.1080/00343404.2017.1283012}
 
 \end{CSLReferences}
 
