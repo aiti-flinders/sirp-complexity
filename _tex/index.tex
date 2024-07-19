@@ -4,7 +4,7 @@
 \PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
 %
 \documentclass[
-]{agujournal2019}
+  number]{elsarticle}
 
 \usepackage{amsmath,amssymb}
 \usepackage{iftex}
@@ -89,45 +89,7 @@
 \makeatletter
 \def\fps@figure{htbp}
 \makeatother
-% definitions for citeproc citations
-\NewDocumentCommand\citeproctext{}{}
-\NewDocumentCommand\citeproc{mm}{%
-  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
-\makeatletter
- % allow citations to break across lines
- \let\@cite@ofmt\@firstofone
- % avoid brackets around text for \cite:
- \def\@biblabel#1{}
- \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
-\makeatother
-\newlength{\cslhangindent}
-\setlength{\cslhangindent}{1.5em}
-\newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
-\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
- {\begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
-  % turn on hanging indent if param 1 is 1
-  \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
-  \fi
-  % set entry spacing
-  \setlength{\itemsep}{#2\baselineskip}}}
- {\end{list}}
-\usepackage{calc}
-\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
-\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
-\usepackage{url} %this package should fix any errors with URLs in refs.
-\usepackage{lineno}
-\usepackage[inline]{trackchanges} %for better track changes. finalnew option will compile document with changes incorporated.
-\usepackage{soul}
-\linenumbers
 \makeatletter
 \@ifpackageloaded{caption}{}{\usepackage{caption}}
 \AtBeginDocument{%
@@ -173,6 +135,8 @@
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
+\usepackage[]{natbib}
+\bibliographystyle{elsarticle-num}
 \usepackage{bookmark}
 
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
@@ -189,44 +153,59 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-
-\draftfalse
-
+\setlength{\parindent}{6pt}
 \begin{document}
+
+\begin{frontmatter}
 \title{Economic Complexity of Australian Regions}
+\author[1]{Hamish Gamble%
+\corref{cor1}%
+}
+ \ead{hamish.gamble@flinders.edu.au} 
+\author[1]{Sharif Rasel%
+%
+}
 
-\authors{Hamish Gamble\affil{1}, Sharif Rasel\affil{1}}
-\affiliation{1}{Flinders University, }
-\correspondingauthor{Hamish Gamble}{hamish.gamble@flinders.edu.au}
+
+\affiliation[1]{organization={Flinders University},,postcodesep={}}
+
+\cortext[cor1]{Corresponding author}
+
+
+        
 
 
 
 
 
-
+\begin{keyword}
+    Economic Complexity \sep 
+    Advanced Manufacturing
+\end{keyword}
+\end{frontmatter}
+    
 
 \subsection{Introduction}\label{introduction}
 
 \subsection{Literature Review}\label{literature-review}
 
-César A. Hidalgo \& Hausmann (2009) introduced the concept of economic
-complexity as a means of quantifying and explaining differences in the
-economic development trajectory of different countries. Their method
-used bilateral trade data to identify the network structure of countries
-and the products they export and built on the concept of relatedness
-introduced in C. A. Hidalgo et al. (2007). Economic complexity has been
-shown to be predictor of
+\citep{hidalgo2009} introduced the concept of economic complexity as a
+means of quantifying and explaining differences in the economic
+development trajectory of different countries. Their method used
+bilateral trade data to identify the network structure of countries and
+the products they export and built on the concept of relatedness
+introduced in \citep{hidalgo2007}. Economic complexity has been shown to
+be predictor of
 
-Relatedness has since been applied across industry (Neffke \& Henning,
-2012), research areas (Guevara et al., 2016), occupation (Muneepeerakul
-et al., 2013) and technology (patents) (Kogler et al., 2013).
+Relatedness has since been applied across industry \citep{neffke2012},
+research areas \citep{guevara2016}, occupation \citep{muneepeerakul2013}
+and technology (patents) \citep{kogler2013}.
 
 The relatedness approach has also been used to quantify economic
 complexity across cities, states, and regions, using employment
-data{[}Fritz \& Manduca (2021); @ecnz; Chávez et al. (2017){]}, business
-counts(Gao \& Zhou, 2018), patent classifications (Balland \& Boschma,
-2021), and interstate and international trade data (Reynolds et al.,
-2018).
+data{[}\citep{ecus}; @ecnz; \citep{ecmexico}{]}, business
+counts\citep{ecchina}, patent classifications \citep{balland2021}, and
+interstate and international trade data \citep{ecaus}.
 
 Despite differences in data sources, the method for calculating economic
 complexity in the literature is relatively standard. The presence of an
@@ -244,8 +223,8 @@ creates a binary matrix \(M\) with \(a\) rows and \(r\) columns.
 \begin{itemize}
 \tightlist
 \item
-  In a study of the economic complexity of US regions, Fritz \& Manduca
-  (2021) use metropolitan areas as the basis for calculations.
+  In a study of the economic complexity of US regions, \citep{ecus} use
+  metropolitan areas as the basis for calculations.
 \item
   Metropolitan areas in the United States are defined such that jobs
   within a given area are held by residents who live in that area.
@@ -260,14 +239,14 @@ creates a binary matrix \(M\) with \(a\) rows and \(r\) columns.
 
 \begin{itemize}
 \item
-  In New Zealand, Davies \& Maré (2021) use weighted correlations of
-  local employment shares. Regions range from a population of 1,434 to
-  573,150 with a mean population of 29,947 and median population of
-  6,952. Employment is measured as an industry-occupation pair.
+  In New Zealand, \citep{ecnz} use weighted correlations of local
+  employment shares. Regions range from a population of 1,434 to 573,150
+  with a mean population of 29,947 and median population of 6,952.
+  Employment is measured as an industry-occupation pair.
 \item
-  C. A. Hidalgo et al. (2007) and others have focused on the
-  co-occurrence of revealed comparative advantage indices, derived from
-  a location quotient. The location quotient is measured as:
+  \citep{hidalgo2007} and others have focused on the co-occurrence of
+  revealed comparative advantage indices, derived from a location
+  quotient. The location quotient is measured as:
 
   \[
   LQ = \frac{X_r^a/X_r}{X^a/X}
@@ -307,7 +286,7 @@ Notebook}}
   - Offshore - Shipping region or as No Fixed Address. Employment in
   these regions totals 497,913 or about 4\% of the total sample.
 \item
-  Following Davies \& Maré (2021), employment is aggregated into
+  Following \citep{ecnz}, employment is aggregated into
   industry-occupation pairs, allowing for differentiation between, for
   example, managers working in agriculture, forestry, and fishing, and
   managers working in retail trade.
@@ -338,9 +317,8 @@ Notebook}}
 
 \subsubsection{Method}\label{method}
 
-This section follows the method of Davies \& Maré (2021) using
-correlations of employment shares rather than a location quotient
-method.
+This section follows the method of \citep{ecnz} using correlations of
+employment shares rather than a location quotient method.
 
 \paragraph{Relatedness}\label{relatedness}
 
@@ -460,81 +438,9 @@ Notebook}}
 \subsection*{References}\label{references}
 \addcontentsline{toc}{subsection}{References}
 
-\phantomsection\label{refs}
-\begin{CSLReferences}{1}{0}
-\vspace{1em}
+\renewcommand{\bibsection}{}
+\bibliography{references.bib}
 
-\bibitem[\citeproctext]{ref-balland2021}
-Balland, P.-A., \& Boschma, R. (2021). Mapping the potentials of regions
-in Europe to contribute to new knowledge production in Industry 4.0
-technologies. \emph{Regional Studies}, \emph{55}(10-11), 1652--1666.
-\url{https://doi.org/10.1080/00343404.2021.1900557}
-
-\bibitem[\citeproctext]{ref-ecmexico}
-Chávez, J. C., Mosqueda, M. T., \& Gómez-Zaldívar, M. (2017). Economic
-complexity and regional growth performance: Evidence from the mexican
-economy. \emph{Review of Regional Studies}, \emph{47}(2), 201--219.
-\url{https://doi.org/10.52324/001c.8023}
-
-\bibitem[\citeproctext]{ref-ecnz}
-Davies, B., \& Maré, D. C. (2021). Relatedness, complexity and local
-growth. \emph{Regional Studies}, \emph{55}(3), 479--494.
-\url{https://doi.org/10.1080/00343404.2020.1802418}
-
-\bibitem[\citeproctext]{ref-ecus}
-Fritz, B. S. L., \& Manduca, R. A. (2021). The economic complexity of US
-metropolitan areas. \emph{Regional Studies}, \emph{55}(7), 1299--1310.
-\url{https://doi.org/10.1080/00343404.2021.1884215}
-
-\bibitem[\citeproctext]{ref-ecchina}
-Gao, J., \& Zhou, T. (2018). Quantifying china's regional economic
-complexity. \emph{Physica A: Statistical Mechanics and Its
-Applications}, \emph{492}, 1591--1603.
-https://doi.org/\url{https://doi.org/10.1016/j.physa.2017.11.084}
-
-\bibitem[\citeproctext]{ref-guevara2016}
-Guevara, M. R., Hartmann, D., Aristarán, M., Mendoza, M., \& Hidalgo, C.
-A. (2016). The research space: using career paths to predict the
-evolution of the research output of individuals, institutions, and
-nations. \emph{Scientometrics}, \emph{109}(3), 1695--1709.
-\url{https://doi.org/10.1007/s11192-016-2125-9}
-
-\bibitem[\citeproctext]{ref-hidalgo2009}
-Hidalgo, César A., \& Hausmann, R. (2009). The building blocks of
-economic complexity. \emph{Proceedings of the National Academy of
-Sciences}, \emph{106}(26), 10570--10575.
-\url{https://doi.org/10.1073/pnas.0900943106}
-
-\bibitem[\citeproctext]{ref-hidalgo2007}
-Hidalgo, C. A., Klinger, B., Barabaśi, A.-L., \& Hausmann, R. (2007).
-The Product Space Conditions the Development of Nations. \emph{Science},
-\emph{317}(5837), 482--487.
-\url{https://doi.org/10.1126/science.1144581}
-
-\bibitem[\citeproctext]{ref-kogler2013}
-Kogler, D. F., Rigby, D. L., \& Tucker, I. (2013). Mapping Knowledge
-Space and Technological Relatedness in US Cities. \emph{European
-Planning Studies}, \emph{21}(9), 1374--1391.
-\url{https://doi.org/10.1080/09654313.2012.755832}
-
-\bibitem[\citeproctext]{ref-muneepeerakul2013}
-Muneepeerakul, R., Lobo, J., Shutters, S. T., Goméz-Liévano, A., \&
-Qubbaj, M. R. (2013). Urban Economies and Occupation Space: Can They Get
-{``}There{''} from {``}Here{''}? \emph{PLoS ONE}, \emph{8}(9), e73676.
-\url{https://doi.org/10.1371/journal.pone.0073676}
-
-\bibitem[\citeproctext]{ref-neffke2012}
-Neffke, F., \& Henning, M. (2012). Skill relatedness and firm
-diversification. \emph{Strategic Management Journal}, \emph{34}(3),
-297--316. \url{https://doi.org/10.1002/smj.2014}
-
-\bibitem[\citeproctext]{ref-ecaus}
-Reynolds, C., Agrawal, M., Lee, I., Zhan, C., Li, J., Taylor, P., et al.
-(2018). A sub-national economic complexity analysis of australia's
-states and territories. \emph{Regional Studies}, \emph{52}(5), 715--726.
-\url{https://doi.org/10.1080/00343404.2017.1283012}
-
-\end{CSLReferences}
 
 
 
