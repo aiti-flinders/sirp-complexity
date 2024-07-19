@@ -1,7 +1,5 @@
 project:
   type: manuscript
-  preview: 
-    port: 4200
 
 execute:
   freeze: auto
@@ -9,20 +7,11 @@ execute:
 format:
   html:
     toc: true
-    fig-width: 6
-    fig-asp: 0.618
     comments:
       hypothesis: true
-  docx: 
-    fig-width: 6
-    fig-asp: 0.618
-  jats: 
-    fig-width: 6
-    fig-asp: 0.618
-  elsevier-pdf:
-    keep-tex: true
-    fig-width: 6
-    fig-asp: 0.618
+  docx: default
+  jats: default
+  agu-pdf: default
 
 
 
