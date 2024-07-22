@@ -6,12 +6,15 @@ execute:
 
 format:
   html:
+    fig-width: 6
+    fig-asp: 0.618
     toc: true
     comments:
       hypothesis: true
   docx: default
-  jats: default
-  agu-pdf: default
+  elsevier-pdf: 
+    fig-width: 6
+    fig-asp: 0.618
 
 
 
