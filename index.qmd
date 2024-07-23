@@ -265,13 +265,7 @@ city_complexity |>
 
 ### Regression
 
--   Independent variables:
-
-    -   share of businesses (state)
-
-    -   population (usual residence)
-
-    -   business entries
+$ECI_r = CC + log(employment) + log(population) + log(income_{hh}) + log(business_{entries}) + business_{share}$
 
 ```{r}
 #| label: city-complexity-ols
@@ -292,11 +286,13 @@ complexity.reg <- complexity.df |>
          log_population = log(population),
          log_hh_income = log(median_hh_inc),
          log_bus_entries = log(total_business_entries)) |> 
-  filter(!is.na(log_bus_entries))
+  filter(!is.na(log_bus_entries),
+         !is.na(business_high_turnover)) |> 
+  st_as_sf() 
 
 
 
-fit.ols <- lm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share,
+fit.ols <- lm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover,
               data = complexity.reg)
 
 
@@ -304,17 +300,29 @@ fit.ols <- lm(city_complexity ~ is_cc + log_employment + log_population + log_hh
 
 ### Spatial Correlation
 
--   Based on @fig-gcc-complexity, it looks like there are clusters of complexity, centred around capital cities.
+```{r}
+#| label: spatial-setup
+nb <- poly2nb(complexity.reg, queen = TRUE)
+lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
+```
 
--   @fig-residuals-map shows the residuals from the linear regression.
+```{r}
+#| label: global-moran
+
+
+moranI <- moran(complexity.reg$city_complexity, listw = lw, n = length(nb), S0 = Szero(lw))
+
+moranIp <- moran.mc(complexity.reg$city_complexity, lw, nsim = 1000)
+```
+
+Based on @fig-gcc-complexity, it looks like there are clusters of complexity, centred around capital cities.
 
 ```{r}
 #| label: fig-residuals-map
 #| fig-cap: Residuals from linear regression
 
 complexity.reg <- complexity.reg |>
-  mutate(olsresid = resid(fit.ols)) |> 
-  st_as_sf()
+  mutate(olsresid = resid(fit.ols)) 
 
 tm_shape(complexity.reg) + 
   tm_polygons(fill = "olsresid",
@@ -326,42 +334,31 @@ tm_shape(complexity.reg) +
   tm_layout(frame = FALSE)
 ```
 
+The residuals from the linear regression are shown in @fig-residuals-map which also shows that the distribution of the residuals appears non-random.
+
 ```{r}
 #| label: fig-moran-plot
 #| fig-cap: Moran Scatterplot for City Complexity in Australia
-
-nb <- poly2nb(complexity.reg, queen = TRUE)
-lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
 
 moran.plot(as.numeric(scale(complexity.reg$city_complexity)),
            listw = lw,
            xlab = "City Complexity",
            ylab = "Neighbours City Complexity")
-
 ```
 
-```{r}
-#| label: global-moran
-# first find the neighbours (using adacency)
+The correlation between complexity and lagged complexity is shown in @fig-moran-plot which also shows a dependency. Finally, we observe a global Moran's I of `r moranI$I` with a p.value of `r round(moranIp$p.value)`. As such, the data appear to be spatially autocorrelated, so a lagged AR or lagged error model should be estimated instead.
 
-
-moranI <- moran(complexity.reg$city_complexity, listw = lw, n = length(nb), S0 = Szero(lw))
-
-moranIp <- moran.mc(complexity.reg$city_complexity, lw, nsim = 1000)
-```
-
--   Global Moran's I = `r moranI$I` with a p.value of `r round(moranIp$p.value)`.
--   The data appear to be spatially autocorrelated.
+Regression output is summarised in @tbl-cap.
 
 ```{r}
 #| label: city-complexity-spatialreg
 
-fit.lag <- lagsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share,
-                     data = complexity.reg,
+fit.lag <- lagsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover,
+              data = complexity.reg,
                     listw = lw, zero.policy = TRUE)
 
-fit.err <- errorsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share,
-                     data = complexity.reg,
+fit.err <- errorsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover,
+              data = complexity.reg,
                     listw = lw, zero.policy = TRUE)
 
 
@@ -371,9 +368,19 @@ fit.err <- errorsarlm(city_complexity ~ is_cc + log_employment + log_population 
 ```{r}
 #| label: regression-results
 #| tbl-cap: Regression summary
-huxreg(fit.ols, fit.lag, fit.err)
+huxreg("OLS" = fit.ols, "Spatial AR" = fit.lag, "Spatial Error" = fit.err,
+       coefs = c("Region type (0 = rest of state)" = "is_cc0",
+                 "log(employment)" = "log_employment",
+                 "log(population)" = "log_population",
+                 "log(household income)" = "log_hh_income",
+                 "log(business entries)" = "log_bus_entries",
+                 "Share of state businesses" = "business_share",
+                 "rho",
+                 "lambda"))
 
 ```
+
+## Hot spots
 
 ```{r}
 #| label: fig-complexity-hot-spots
