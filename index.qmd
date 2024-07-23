@@ -66,7 +66,7 @@ In New Zealand, @ecnz use weighted correlations of local employment shares. Regi
 #| label: setup
 library(tidyverse)
 library(strayr)
-library(economiccomplexity)
+library(ecomplexity)
 library(gtsummary)
 library(sf)
 library(tmap)
@@ -74,7 +74,7 @@ library(spdep)
 library(spatialreg)
 library(huxtable)
 
-pow <- read_csv("data/sa3-pow-occp-indp-1-digit.csv",
+pow <-read_csv("data/sa3-pow-occp-indp-1-digit.csv",
                 skip = 9,
                 n_max = 99360,
                 col_select = c(sa3 = "SA3 (POW)",
@@ -291,7 +291,7 @@ complexity.reg <- complexity.df |>
 
 
 
-fit.ols <- lm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover,
+fit.ols <- lm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover + state_name_2021,
               data = complexity.reg)
 
 
@@ -364,15 +364,7 @@ fit.err <- errorsarlm(city_complexity ~ is_cc + log_employment + log_population 
 
 ```{r}
 #| label: regression-results
-huxreg("OLS" = fit.ols, "Spatial AR" = fit.lag, "Spatial Error" = fit.err,
-       coefs = c("Region type (0 = rest of state)" = "is_cc0",
-                 "log(employment)" = "log_employment",
-                 "log(population)" = "log_population",
-                 "log(household income)" = "log_hh_income",
-                 "log(business entries)" = "log_bus_entries",
-                 "Share of state businesses" = "business_share",
-                 "rho",
-                 "lambda"))
+huxreg("OLS" = fit.ols, "Spatial AR" = fit.lag, "Spatial Error" = fit.err)
 
 ```
 
@@ -418,6 +410,24 @@ tm_shape(complexity.reg) +
 ## Conclusion
 
 ## Misc
+
+-   correlation between eci calculated differently
+
+```{r}
+#| label: complexity-industry
+industry_sa3 <- read_complexitydata("sa3_indp4") |> mutate(year = 2021)
+complexity_indp4 <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021)
+
+complexity_indp4 |> 
+  distinct(sa3, country_complexity_index) |> 
+  full_join(complexity.reg) |> 
+  ggplot(aes(x = country_complexity_index, y = city_complexity)) + 
+  geom_point() +
+  labs(x = "ECI (Employment by Industry)",
+       y = "ECI (Employment by Industry-Occupation")
+
+
+```
 
 ## References {.unnumbered}
 
