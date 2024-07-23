@@ -71,6 +71,8 @@ library(gtsummary)
 library(sf)
 library(tmap)
 library(spdep)
+library(spatialreg)
+library(huxtable)
 
 pow <- read_csv("data/sa3-pow-occp-indp-1-digit.csv",
                 skip = 9,
@@ -283,14 +285,21 @@ complexity.reg <- complexity.df |>
   inner_join(data_by_region, by = c("sa3" = "region")) |> 
   inner_join(sa3, by = c("sa3" = "sa3_name_2021")) |> 
   group_by(state_name_2021) |> 
-  mutate(business_share = total_businesses/sum(total_businesses, na.rm = TRUE)) |> 
-  ungroup() 
+  mutate(business_share = total_businesses/sum(total_businesses, na.rm = TRUE)) |>
+  ungroup() |> 
+  mutate(is_cc = fct(ifelse(str_detect(gcc_name_2021, "Greater"), "1", "0")),
+         log_employment = log(total_employment),
+         log_population = log(population),
+         log_hh_income = log(median_hh_inc),
+         log_bus_entries = log(total_business_entries)) |> 
+  filter(!is.na(log_bus_entries))
 
 
 
-fit.ols <- lm(city_complexity ~ total_employment + population + business_share + median_hh_inc, data = complexity.reg)
+fit.ols <- lm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share,
+              data = complexity.reg)
 
-tbl_regression(fit.ols)
+
 ```
 
 ### Spatial Correlation
@@ -317,13 +326,11 @@ tm_shape(complexity.reg) +
   tm_layout(frame = FALSE)
 ```
 
--   Is economic complexity correlated across space?
-
 ```{r}
 #| label: fig-moran-plot
 #| fig-cap: Moran Scatterplot for City Complexity in Australia
 
-nb <- poly2nb(city_complexity, queen = TRUE)
+nb <- poly2nb(complexity.reg, queen = TRUE)
 lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
 
 moran.plot(as.numeric(scale(complexity.reg$city_complexity)),
@@ -336,41 +343,63 @@ moran.plot(as.numeric(scale(complexity.reg$city_complexity)),
 ```{r}
 #| label: global-moran
 # first find the neighbours (using adacency)
-nb <- poly2nb(city_complexity, queen = TRUE)
-lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
 
-moranI <- moran(city_complexity$city_complexity, listw = lw, n = length(nb), S0 = Szero(lw))
 
-moranIp <- moran.mc(city_complexity$city_complexity, lw, nsim = 1000)
+moranI <- moran(complexity.reg$city_complexity, listw = lw, n = length(nb), S0 = Szero(lw))
+
+moranIp <- moran.mc(complexity.reg$city_complexity, lw, nsim = 1000)
 ```
 
 -   Global Moran's I = `r moranI$I` with a p.value of `r round(moranIp$p.value)`.
+-   The data appear to be spatially autocorrelated.
+
+```{r}
+#| label: city-complexity-spatialreg
+
+fit.lag <- lagsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share,
+                     data = complexity.reg,
+                    listw = lw, zero.policy = TRUE)
+
+fit.err <- errorsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share,
+                     data = complexity.reg,
+                    listw = lw, zero.policy = TRUE)
+
+
+
+```
+
+```{r}
+#| label: regression-results
+#| tbl-cap: Regression summary
+huxreg(fit.ols, fit.lag, fit.err)
+
+```
 
 ```{r}
 #| label: fig-complexity-hot-spots
 #| fig-cap: City Complexity hot spots (based on local Moran's I p.values)
 
-MC.i <- localmoran_perm(city_complexity$city_complexity, lw, nsim = 9999) 
+MC.i <- localmoran_perm(complexity.reg$city_complexity, lw, nsim = 9999) 
 
 MC.i.df <- MC.i |> 
   as.data.frame() 
 
-city_complexity$p <- MC.i.df$`Pr(folded) Sim`
-city_complexity$Ii <- hotspot(MC.i, 
+complexity.reg$p <- MC.i.df$`Pr(folded) Sim`
+complexity.reg$Ii <- hotspot(MC.i, 
                               Prname = "Pr(folded) Sim", 
                               cutoff = 0.05, 
                               p.adjust = "fdr")
-city_complexity$Ii <- factor(city_complexity$Ii, 
+complexity.reg$Ii <- factor(complexity.reg$Ii, 
                              levels = c("High-High",
                                         "Low-Low",
                                         "Low-High", 
                                         "High-Low",
                                         ">0.05"))
-city_complexity$Ii[is.na(city_complexity$Ii)] <- ">0.05"
+complexity.reg$Ii[is.na(complexity.reg$Ii)] <- ">0.05"
 
 pal2 <- c( "#FF0000", "#0000FF", "#a7adf9", "#f4ada8","#ededed")
 
-tm_shape(city_complexity) + 
+tm_shape(complexity.reg) + 
   tm_polygons(fill = "Ii",
               fill.scale = tm_scale_categorical(values = pal2),
               fill.legend = tm_legend(outside = TRUE, 
