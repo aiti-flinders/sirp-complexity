@@ -30,11 +30,11 @@ number-sections: true
 
 ## Literature Review
 
-@hidalgo2009 introduced the concept of economic complexity as a means of quantifying and explaining differences in the economic development trajectory of different countries. Their method used bilateral trade data to identify the network structure of countries and the products they export and built on the concept of relatedness introduced in @hidalgo2007. Economic complexity has been shown to be predictor of
+@hidalgo2009 introduced the concept of economic complexity as a means of quantifying and explaining differences in the economic development trajectory of different countries. Their method used bilateral trade data to identify the network structure of countries and the products they export and built on the concept of relatedness introduced in @hidalgo2007. Economic complexity has been shown to be a positive predictor of Gross Domestic Product (GDP), and GDP growth. Increasing economic complexity has also been shown to decrease unemployment and increase employment @adam2023, reduce green house gas emissions @romero2021 and reduce income inequality @hartmann2017.
 
 Relatedness has since been applied across industry [@neffke2012], research areas [@guevara2016], occupation [@muneepeerakul2013] and technology (patents) [@kogler2013].
 
-The relatedness approach has also been used to quantify economic complexity across cities, states, and regions, using employment data[@ecus; \@ecnz; @ecmexico], business counts[@ecchina], patent classifications [@balland2021], and interstate and international trade data [@ecaus].
+The relatedness approach has also been used to quantify economic complexity across cities, states, and regions, using employment data[@ecus, @ecnz, @ecmexico], business counts[@ecchina], patent classifications [@balland2021], and interstate and international trade data [@ecaus].
 
 Despite differences in data sources, the method for calculating economic complexity in the literature is relatively standard. The presence of an activity in a region is often identified using a location quotient method, such that an activity is said to be present in a region if:
 
@@ -42,22 +42,13 @@ $$\frac{X_a^r/\sum_{a}X_a^r}{\sum_{r}X_a^r/\sum_{r,a}X_a^r} \geq 1$$
 
 Where $X$ is the measure of an activity $a$ in region $r$ - such as the level of employment in an occupation in a city, or the number of businesses classified in an industry in a province, or the value of exports of a product from a country. The location quotient method creates a binary matrix $M$ with $a$ rows and $r$ columns.
 
--   In a study of the economic complexity of US regions, @ecus use metropolitan areas as the basis for calculations.
--   Metropolitan areas in the United States are defined such that jobs within a given area are held by residents who live in that area.
--   Metropolitan areas have a population of at least 50,000 people. The smallest MSA was estimated to have a 2023 population of 57,700 (about 0.015% of US population).
--   
+### Regional economic complexity of small areas
 
-### Small (n) areas
+The location quotient method can be unreliable due to the discontinuity at 1. This is especially relevant when economic complexity is calculated in regional areas where either $X_a^r$ or $\frac{\sum_{r}X_a^r}{\sum_{r,a}X_a^r}$ are small. In these cases, small changes, or measurement error in $X_a^r$ can significantly change the location quotient.
 
--   In New Zealand, @ecnz use weighted correlations of local employment shares. Regions range from a population of 1,434 to 573,150 with a mean population of 29,947 and median population of 6,952. Employment is measured as an industry-occupation pair.
+The choice of region size and activity classification is important. In a study of the economic complexity of US regions, @ecus use metropolitan areas as the basis for calculations. Metropolitan areas in the United States are defined such that jobs within a given area are held by residents who live in that area.Metropolitan areas have a population of at least 50,000 people. The smallest MSA was estimated to have a 2023 population of 57,700 (about 0.015% of US population). They find a poor correlation between ECI calculated at higher level aggregated industry classifications indicating the importance of a high degree of disaggregation to provide as much information to the model as possible @ecus.
 
--   @hidalgo2007 and others have focused on the co-occurrence of revealed comparative advantage indices, derived from a location quotient. The location quotient is measured as:
-
-    $$
-    LQ = \frac{X_r^a/X_r}{X^a/X}
-    $$
-
--   As such, small values of $\frac{X^a}{X}$ can exacerbate any measurement error in the numerator. Additionally, the binary nature of measuring revealed comparative advantage when the location quotient is greater than 1, results in a discontinuity at $LQ = 1$.
+In New Zealand, @ecnz use weighted correlations of local employment shares. Regions range from a population of 1,434 to 573,150 with a mean population of 29,947 and median population of 6,952. Employment is measured as an industry-occupation pair.
 
 -   Differences in relationship between complexity and relatedness on indicators may be entirely context dependent.
 
@@ -121,7 +112,7 @@ pow_clean <- pow |>
 
 -   Following @ecnz, employment is aggregated into industry-occupation pairs, allowing for differentiation between, for example, managers working in agriculture, forestry, and fishing, and managers working in retail trade.
 
--   Dataset covers `r length(unique(pow_clean$sa3))` regions and `r length(unique(pow_clean$industry_occupation))` industry-occupations. @fig-employment-density shows the presence of any level of employment within a region and industry-occupation. As can be seen, there is a high level of employment density across our data.
+-   Dataset covers `r length(unique(pow_clean$sa3))` regions and `r length(unique(pow_clean$industry_occupation))` industry-occupations. @fig-employment-density shows the presence of any level of employment within a region and industry-occupation. As can be seen, there is a high level of employment density across our data, with 88.5% of all combinations of region, industry, and occupation.
 
 ```{r}
 #| label: fig-employment-density
