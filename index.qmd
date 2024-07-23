@@ -269,7 +269,6 @@ $ECI_r = CC + log(employment) + log(population) + log(income_{hh}) + log(busines
 
 ```{r}
 #| label: city-complexity-ols
-#| tbl-cap: OLS Regression
 load("data/data_by_region.rda")
 
 sa3 <- read_absmap("sa32021", export_dir = "data")
@@ -348,7 +347,7 @@ moran.plot(as.numeric(scale(complexity.reg$city_complexity)),
 
 The correlation between complexity and lagged complexity is shown in @fig-moran-plot which also shows a dependency. Finally, we observe a global Moran's I of `r moranI$I` with a p.value of `r round(moranIp$p.value)`. As such, the data appear to be spatially autocorrelated, so a lagged AR or lagged error model should be estimated instead.
 
-Regression output is summarised in @tbl-cap.
+Regression output is summarised in @tbl-regression-results.
 
 ```{r}
 #| label: city-complexity-spatialreg
