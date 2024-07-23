@@ -347,8 +347,6 @@ moran.plot(as.numeric(scale(complexity.reg$city_complexity)),
 
 The correlation between complexity and lagged complexity is shown in @fig-moran-plot which also shows a dependency. Finally, we observe a global Moran's I of `r moranI$I` with a p.value of `r round(moranIp$p.value)`. As such, the data appear to be spatially autocorrelated, so a lagged AR or lagged error model should be estimated instead.
 
-Regression output is summarised in @tbl-regression-results.
-
 ```{r}
 #| label: city-complexity-spatialreg
 
@@ -366,7 +364,6 @@ fit.err <- errorsarlm(city_complexity ~ is_cc + log_employment + log_population 
 
 ```{r}
 #| label: regression-results
-#| tbl-cap: Regression summary
 huxreg("OLS" = fit.ols, "Spatial AR" = fit.lag, "Spatial Error" = fit.err,
        coefs = c("Region type (0 = rest of state)" = "is_cc0",
                  "log(employment)" = "log_employment",
@@ -419,6 +416,8 @@ tm_shape(complexity.reg) +
 ```
 
 ## Conclusion
+
+## Misc
 
 ## References {.unnumbered}
 
