@@ -303,7 +303,8 @@ https://doi.org/10.1080/00343404.2020.1802418
   </ul></li>
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">4</span> Results</a>
   <ul class="collapse">
-  <li><a href="#spatial-correlation" id="toc-spatial-correlation" class="nav-link" data-scroll-target="#spatial-correlation"><span class="header-section-number">4.1</span> Spatial Correlation</a></li>
+  <li><a href="#regression" id="toc-regression" class="nav-link" data-scroll-target="#regression"><span class="header-section-number">4.1</span> Regression</a></li>
+  <li><a href="#spatial-correlation" id="toc-spatial-correlation" class="nav-link" data-scroll-target="#spatial-correlation"><span class="header-section-number">4.2</span> Spatial Correlation</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">5</span> Conclusion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -368,7 +369,8 @@ The following object is masked from 'package:stats':
 
     density</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtsummary)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.3.1; sf_use_s2() is TRUE</code></pre>
 </div>
@@ -617,61 +619,631 @@ Figure&nbsp;2: Complexity of Australian Greater Capital City Areas
 </div>
 </div>
 </div></div>
-<section id="spatial-correlation" class="level3" data-number="4.1">
-<h3 data-number="4.1" class="anchored" data-anchor-id="spatial-correlation"><span class="header-section-number">4.1</span> Spatial Correlation</h3>
+<section id="regression" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="regression"><span class="header-section-number">4.1</span> Regression</h3>
+<ul>
+<li><p>Independent variables:</p>
+<ul>
+<li><p>share of businesses (state)</p></li>
+<li><p>population (usual residence)</p></li>
+<li><p>business entries</p></li>
+</ul></li>
+</ul>
+<div class="cell-container"><div class="cell-decorator"><pre>In [6]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"data/data_by_region.rda"</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>sa3 <span class="ot">&lt;-</span> <span class="fu">read_absmap</span>(<span class="st">"sa32021"</span>, <span class="at">export_dir =</span> <span class="st">"data"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Reading sa32021 file found in data</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>complexity.reg <span class="ot">&lt;-</span> complexity.df <span class="sc">|&gt;</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(sa3, city_complexity) <span class="sc">|&gt;</span> </span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(data_by_region, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sa3"</span> <span class="ot">=</span> <span class="st">"region"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(sa3, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sa3"</span> <span class="ot">=</span> <span class="st">"sa3_name_2021"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state_name_2021) <span class="sc">|&gt;</span> </span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">business_share =</span> total_businesses<span class="sc">/</span><span class="fu">sum</span>(total_businesses, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() </span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>fit.ols <span class="ot">&lt;-</span> <span class="fu">lm</span>(city_complexity <span class="sc">~</span> total_employment <span class="sc">+</span> population <span class="sc">+</span> business_share <span class="sc">+</span> median_hh_inc, <span class="at">data =</span> complexity.reg)</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl_regression</span>(fit.ols)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="pepjrutgdb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pepjrutgdb table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#pepjrutgdb thead, #pepjrutgdb tbody, #pepjrutgdb tfoot, #pepjrutgdb tr, #pepjrutgdb td, #pepjrutgdb th {
+  border-style: none;
+}
+
+#pepjrutgdb p {
+  margin: 0;
+  padding: 0;
+}
+
+#pepjrutgdb .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#pepjrutgdb .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#pepjrutgdb .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#pepjrutgdb .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#pepjrutgdb .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#pepjrutgdb .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#pepjrutgdb .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#pepjrutgdb .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#pepjrutgdb .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#pepjrutgdb .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#pepjrutgdb .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#pepjrutgdb .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#pepjrutgdb .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#pepjrutgdb .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#pepjrutgdb .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#pepjrutgdb .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#pepjrutgdb .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#pepjrutgdb .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#pepjrutgdb .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#pepjrutgdb .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_left {
+  text-align: left;
+}
+
+#pepjrutgdb .gt_center {
+  text-align: center;
+}
+
+#pepjrutgdb .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#pepjrutgdb .gt_font_normal {
+  font-weight: normal;
+}
+
+#pepjrutgdb .gt_font_bold {
+  font-weight: bold;
+}
+
+#pepjrutgdb .gt_font_italic {
+  font-style: italic;
+}
+
+#pepjrutgdb .gt_super {
+  font-size: 65%;
+}
+
+#pepjrutgdb .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#pepjrutgdb .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#pepjrutgdb .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#pepjrutgdb .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#pepjrutgdb .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#pepjrutgdb .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#pepjrutgdb .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<caption>OLS Regression</caption>
+<thead>
+<tr class="header gt_col_headings">
+<th id="<strong>Characteristic</strong>" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="<strong>Beta</strong>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>Beta</strong></th>
+<th id="<strong>95% CI</strong><span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+<th id="<strong>p-value</strong>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">total_employment</td>
+<td class="gt_row gt_center" headers="estimate">0.00</td>
+<td class="gt_row gt_center" headers="ci">0.00, 0.00</td>
+<td class="gt_row gt_center" headers="p.value">0.013</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">population</td>
+<td class="gt_row gt_center" headers="estimate">0.00</td>
+<td class="gt_row gt_center" headers="ci">0.00, 0.00</td>
+<td class="gt_row gt_center" headers="p.value">0.2</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">business_share</td>
+<td class="gt_row gt_center" headers="estimate">1.9</td>
+<td class="gt_row gt_center" headers="ci">0.10, 3.7</td>
+<td class="gt_row gt_center" headers="p.value">0.039</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">median_hh_inc</td>
+<td class="gt_row gt_center" headers="estimate">0.00</td>
+<td class="gt_row gt_center" headers="ci">0.00, 0.00</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+</tbody><tfoot class="gt_footnotes">
+<tr class="odd">
+<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> CI = Confidence Interval</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div></div>
+</section>
+<section id="spatial-correlation" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="spatial-correlation"><span class="header-section-number">4.2</span> Spatial Correlation</h3>
+<ul>
+<li><p>Based on <a href="#fig-gcc-complexity" class="quarto-xref">Figure&nbsp;2</a>, it looks like there are clusters of complexity, centred around capital cities.</p></li>
+<li><p><a href="#fig-residuals-map" class="quarto-xref">Figure&nbsp;3</a> shows the residuals from the linear regression.</p></li>
+</ul>
+<div class="cell-container"><div class="cell-decorator"><pre>In [7]:</pre></div><div id="cell-fig-residuals-map" class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>complexity.reg <span class="ot">&lt;-</span> complexity.reg <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">olsresid =</span> <span class="fu">resid</span>(fit.ols)) <span class="sc">|&gt;</span> </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(complexity.reg) <span class="sc">+</span> </span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"olsresid"</span>,</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_intervals</span>(<span class="at">values =</span> <span class="st">"Reds"</span>),</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">text.size =</span> <span class="fl">0.8</span>),</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"grey80"</span>,</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">lwd =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">frame =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-residuals-map" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-residuals-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="">
+<a href="index_files/figure-html/fig-residuals-map-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: Residuals from linear regression"><img src="index_files/figure-html/fig-residuals-map-1.png" class="img-fluid figure-img" width="576"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-residuals-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Residuals from linear regression
+</figcaption>
+</figure>
+</div>
+</div>
+</div></div>
 <ul>
 <li>Is economic complexity correlated across space?</li>
 </ul>
-<div class="cell-container"><div class="cell-decorator"><pre>In [6]:</pre></div><div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first find the neighbours (using adacency)</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>nb <span class="ot">&lt;-</span> <span class="fu">poly2nb</span>(city_complexity, <span class="at">queen =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>lw <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(nb, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>moranI <span class="ot">&lt;-</span> <span class="fu">moran</span>(city_complexity<span class="sc">$</span>city_complexity, <span class="at">listw =</span> lw, <span class="at">n =</span> <span class="fu">length</span>(nb), <span class="at">S0 =</span> <span class="fu">Szero</span>(lw))</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>moranIp <span class="ot">&lt;-</span> <span class="fu">moran.mc</span>(city_complexity<span class="sc">$</span>city_complexity, lw, <span class="at">nsim =</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [8]:</pre></div><div id="cell-fig-moran-plot" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>nb <span class="ot">&lt;-</span> <span class="fu">poly2nb</span>(city_complexity, <span class="at">queen =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>lw <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(nb, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="fu">moran.plot</span>(<span class="fu">as.numeric</span>(<span class="fu">scale</span>(complexity.reg<span class="sc">$</span>city_complexity)),</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">listw =</span> lw,</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">xlab =</span> <span class="st">"City Complexity"</span>,</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">ylab =</span> <span class="st">"Neighbours City Complexity"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-moran-plot" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-moran-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="">
+<a href="index_files/figure-html/fig-moran-plot-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;4: Moran Scatterplot for City Complexity in Australia"><img src="index_files/figure-html/fig-moran-plot-1.png" class="img-fluid figure-img" width="576"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-moran-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Moran Scatterplot for City Complexity in Australia
+</figcaption>
+</figure>
+</div>
+</div>
+</div></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [9]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first find the neighbours (using adacency)</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>nb <span class="ot">&lt;-</span> <span class="fu">poly2nb</span>(city_complexity, <span class="at">queen =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>lw <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(nb, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>moranI <span class="ot">&lt;-</span> <span class="fu">moran</span>(city_complexity<span class="sc">$</span>city_complexity, <span class="at">listw =</span> lw, <span class="at">n =</span> <span class="fu">length</span>(nb), <span class="at">S0 =</span> <span class="fu">Szero</span>(lw))</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>moranIp <span class="ot">&lt;-</span> <span class="fu">moran.mc</span>(city_complexity<span class="sc">$</span>city_complexity, lw, <span class="at">nsim =</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
 <ul>
 <li>Global Moran’s I = 0.5007756 with a p.value of 0.</li>
 </ul>
-<div class="cell-container"><div class="cell-decorator"><pre>In [7]:</pre></div><div id="cell-fig-complexity-hot-spots" class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>MC.i <span class="ot">&lt;-</span> <span class="fu">localmoran_perm</span>(city_complexity<span class="sc">$</span>city_complexity, lw, <span class="at">nsim =</span> <span class="dv">9999</span>) </span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>MC.i.df <span class="ot">&lt;-</span> MC.i <span class="sc">|&gt;</span> </span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() </span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>p <span class="ot">&lt;-</span> MC.i.df<span class="sc">$</span><span class="st">`</span><span class="at">Pr(folded) Sim</span><span class="st">`</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>Ii <span class="ot">&lt;-</span> <span class="fu">hotspot</span>(MC.i, </span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>                              <span class="at">Prname =</span> <span class="st">"Pr(folded) Sim"</span>, </span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>                              <span class="at">cutoff =</span> <span class="fl">0.05</span>, </span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">p.adjust =</span> <span class="st">"fdr"</span>)</span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>Ii <span class="ot">&lt;-</span> <span class="fu">factor</span>(city_complexity<span class="sc">$</span>Ii, </span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>                             <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"High-High"</span>,</span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"Low-Low"</span>,</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"Low-High"</span>, </span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"High-Low"</span>,</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"&gt;0.05"</span>))</span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>Ii[<span class="fu">is.na</span>(city_complexity<span class="sc">$</span>Ii)] <span class="ot">&lt;-</span> <span class="st">"&gt;0.05"</span></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>pal2 <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">"#FF0000"</span>, <span class="st">"#0000FF"</span>, <span class="st">"#a7adf9"</span>, <span class="st">"#f4ada8"</span>,<span class="st">"#ededed"</span>)</span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(city_complexity) <span class="sc">+</span> </span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"Ii"</span>,</span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_categorical</span>(<span class="at">values =</span> pal2),</span>
-<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">text.size =</span> <span class="fl">0.8</span>),</span>
-<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"grey80"</span>,</span>
-<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>              <span class="at">lwd =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">frame =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
-<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets</span>(<span class="at">by =</span> <span class="st">"gcc_name_2021"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-container"><div class="cell-decorator"><pre>In [10]:</pre></div><div id="cell-fig-complexity-hot-spots" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>MC.i <span class="ot">&lt;-</span> <span class="fu">localmoran_perm</span>(city_complexity<span class="sc">$</span>city_complexity, lw, <span class="at">nsim =</span> <span class="dv">9999</span>) </span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>MC.i.df <span class="ot">&lt;-</span> MC.i <span class="sc">|&gt;</span> </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>p <span class="ot">&lt;-</span> MC.i.df<span class="sc">$</span><span class="st">`</span><span class="at">Pr(folded) Sim</span><span class="st">`</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>Ii <span class="ot">&lt;-</span> <span class="fu">hotspot</span>(MC.i, </span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>                              <span class="at">Prname =</span> <span class="st">"Pr(folded) Sim"</span>, </span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>                              <span class="at">cutoff =</span> <span class="fl">0.05</span>, </span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>                              <span class="at">p.adjust =</span> <span class="st">"fdr"</span>)</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>Ii <span class="ot">&lt;-</span> <span class="fu">factor</span>(city_complexity<span class="sc">$</span>Ii, </span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>                             <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"High-High"</span>,</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"Low-Low"</span>,</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"Low-High"</span>, </span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"High-Low"</span>,</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>                                        <span class="st">"&gt;0.05"</span>))</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>city_complexity<span class="sc">$</span>Ii[<span class="fu">is.na</span>(city_complexity<span class="sc">$</span>Ii)] <span class="ot">&lt;-</span> <span class="st">"&gt;0.05"</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>pal2 <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="st">"#FF0000"</span>, <span class="st">"#0000FF"</span>, <span class="st">"#a7adf9"</span>, <span class="st">"#f4ada8"</span>,<span class="st">"#ededed"</span>)</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(city_complexity) <span class="sc">+</span> </span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"Ii"</span>,</span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.scale =</span> <span class="fu">tm_scale_categorical</span>(<span class="at">values =</span> pal2),</span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>              <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">outside =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">text.size =</span> <span class="fl">0.8</span>),</span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>              <span class="at">col =</span> <span class="st">"grey80"</span>,</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>              <span class="at">lwd =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">frame =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> </span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets</span>(<span class="at">by =</span> <span class="st">"gcc_name_2021"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-complexity-hot-spots" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-complexity-hot-spots-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="">
-<a href="index_files/figure-html/fig-complexity-hot-spots-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: City Complexity hot spots (based on local Moran’s I p.values)"><img src="index_files/figure-html/fig-complexity-hot-spots-1.png" class="img-fluid figure-img" width="576"></a>
+<a href="index_files/figure-html/fig-complexity-hot-spots-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;5: City Complexity hot spots (based on local Moran’s I p.values)"><img src="index_files/figure-html/fig-complexity-hot-spots-1.png" class="img-fluid figure-img" width="576"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-complexity-hot-spots-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: City Complexity hot spots (based on local Moran’s I p.values)
+Figure&nbsp;5: City Complexity hot spots (based on local Moran’s I p.values)
 </figcaption>
 </figure>
 </div>
@@ -1152,7 +1724,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","openEffect":"zoom","selector":".lightbox","loop":false});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"descPosition":"bottom","selector":".lightbox","closeEffect":"zoom","loop":false,"openEffect":"zoom"});
 (function() {
   let previousOnload = window.onload;
   window.onload = () => {

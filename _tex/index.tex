@@ -395,13 +395,97 @@ Capital City Areas}
 \href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
 Notebook}}
 
+\subsubsection{Regression}\label{regression}
+
+\begin{itemize}
+\item
+  Independent variables:
+
+  \begin{itemize}
+  \item
+    share of businesses (state)
+  \item
+    population (usual residence)
+  \item
+    business entries
+  \end{itemize}
+\end{itemize}
+
+\begin{longtable}[]{@{}lccc@{}}
+\caption{OLS Regression}\tabularnewline
+\toprule\noalign{}
+\textbf{Characteristic} & \textbf{Beta} & \textbf{95\% CI} &
+\textbf{p-value} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\textbf{Characteristic} & \textbf{Beta} & \textbf{95\% CI} &
+\textbf{p-value} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+total\_employment & 0.00 & 0.00, 0.00 & 0.013 \\
+population & 0.00 & 0.00, 0.00 & 0.2 \\
+business\_share & 1.9 & 0.10, 3.7 & 0.039 \\
+median\_hh\_inc & 0.00 & 0.00, 0.00 & \textless0.001 \\
+\end{longtable}
+
+\textsubscript{Source:
+\href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
+Notebook}}
+
 \subsubsection{Spatial Correlation}\label{spatial-correlation}
+
+\begin{itemize}
+\item
+  Based on Figure~\ref{fig-gcc-complexity}, it looks like there are
+  clusters of complexity, centred around capital cities.
+\item
+  Figure~\ref{fig-residuals-map} shows the residuals from the linear
+  regression.
+\end{itemize}
+
+\phantomsection\label{cell-fig-residuals-map}
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics{index_files/figure-pdf/fig-residuals-map-1.pdf}
+
+}
+
+\caption{\label{fig-residuals-map}Residuals from linear regression}
+
+\end{figure}%
+
+\textsubscript{Source:
+\href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
+Notebook}}
 
 \begin{itemize}
 \tightlist
 \item
   Is economic complexity correlated across space?
 \end{itemize}
+
+\phantomsection\label{cell-fig-moran-plot}
+\begin{figure}[H]
+
+\centering{
+
+\includegraphics{index_files/figure-pdf/fig-moran-plot-1.pdf}
+
+}
+
+\caption{\label{fig-moran-plot}Moran Scatterplot for City Complexity in
+Australia}
+
+\end{figure}%
+
+\textsubscript{Source:
+\href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article
+Notebook}}
 
 \textsubscript{Source:
 \href{https://aiti-flinders.github.io/sirp-complexity/index.qmd.html}{Article

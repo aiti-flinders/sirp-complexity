@@ -204,7 +204,8 @@ https://doi.org/10.1080/00343404.2020.1802418
   </ul></li>
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">4</span> Results</a>
   <ul class="collapse">
-  <li><a href="#spatial-correlation" id="toc-spatial-correlation" class="nav-link" data-scroll-target="#spatial-correlation"><span class="header-section-number">4.1</span> Spatial Correlation</a></li>
+  <li><a href="#regression" id="toc-regression" class="nav-link" data-scroll-target="#regression"><span class="header-section-number">4.1</span> Regression</a></li>
+  <li><a href="#spatial-correlation" id="toc-spatial-correlation" class="nav-link" data-scroll-target="#spatial-correlation"><span class="header-section-number">4.2</span> Spatial Correlation</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">5</span> Conclusion</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -317,11 +318,543 @@ Figure&nbsp;2: Complexity of Australian Greater Capital City Areas
 </div>
 </div>
 </div>
-<section id="spatial-correlation" class="level3" data-number="4.1">
-<h3 data-number="4.1" class="anchored" data-anchor-id="spatial-correlation"><span class="header-section-number">4.1</span> Spatial Correlation</h3>
+<section id="regression" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="regression"><span class="header-section-number">4.1</span> Regression</h3>
+<ul>
+<li><p>Independent variables:</p>
+<ul>
+<li><p>share of businesses (state)</p></li>
+<li><p>population (usual residence)</p></li>
+<li><p>business entries</p></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div id="pepjrutgdb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pepjrutgdb table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#pepjrutgdb thead, #pepjrutgdb tbody, #pepjrutgdb tfoot, #pepjrutgdb tr, #pepjrutgdb td, #pepjrutgdb th {
+  border-style: none;
+}
+
+#pepjrutgdb p {
+  margin: 0;
+  padding: 0;
+}
+
+#pepjrutgdb .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#pepjrutgdb .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#pepjrutgdb .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#pepjrutgdb .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#pepjrutgdb .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#pepjrutgdb .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#pepjrutgdb .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#pepjrutgdb .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#pepjrutgdb .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#pepjrutgdb .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#pepjrutgdb .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#pepjrutgdb .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#pepjrutgdb .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#pepjrutgdb .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#pepjrutgdb .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#pepjrutgdb .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#pepjrutgdb .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#pepjrutgdb .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#pepjrutgdb .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#pepjrutgdb .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#pepjrutgdb .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#pepjrutgdb .gt_left {
+  text-align: left;
+}
+
+#pepjrutgdb .gt_center {
+  text-align: center;
+}
+
+#pepjrutgdb .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#pepjrutgdb .gt_font_normal {
+  font-weight: normal;
+}
+
+#pepjrutgdb .gt_font_bold {
+  font-weight: bold;
+}
+
+#pepjrutgdb .gt_font_italic {
+  font-style: italic;
+}
+
+#pepjrutgdb .gt_super {
+  font-size: 65%;
+}
+
+#pepjrutgdb .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#pepjrutgdb .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#pepjrutgdb .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#pepjrutgdb .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#pepjrutgdb .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#pepjrutgdb .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#pepjrutgdb .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<caption>OLS Regression</caption>
+<thead>
+<tr class="header gt_col_headings">
+<th id="<strong>Characteristic</strong>" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Characteristic</strong></th>
+<th id="<strong>Beta</strong>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>Beta</strong></th>
+<th id="<strong>95% CI</strong><span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+<th id="<strong>p-value</strong>" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>p-value</strong></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">total_employment</td>
+<td class="gt_row gt_center" headers="estimate">0.00</td>
+<td class="gt_row gt_center" headers="ci">0.00, 0.00</td>
+<td class="gt_row gt_center" headers="p.value">0.013</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">population</td>
+<td class="gt_row gt_center" headers="estimate">0.00</td>
+<td class="gt_row gt_center" headers="ci">0.00, 0.00</td>
+<td class="gt_row gt_center" headers="p.value">0.2</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">business_share</td>
+<td class="gt_row gt_center" headers="estimate">1.9</td>
+<td class="gt_row gt_center" headers="ci">0.10, 3.7</td>
+<td class="gt_row gt_center" headers="p.value">0.039</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">median_hh_inc</td>
+<td class="gt_row gt_center" headers="estimate">0.00</td>
+<td class="gt_row gt_center" headers="ci">0.00, 0.00</td>
+<td class="gt_row gt_center" headers="p.value">&lt;0.001</td>
+</tr>
+</tbody><tfoot class="gt_footnotes">
+<tr class="odd">
+<td colspan="4" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> CI = Confidence Interval</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="spatial-correlation" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="spatial-correlation"><span class="header-section-number">4.2</span> Spatial Correlation</h3>
+<ul>
+<li><p>Based on <a href="#fig-gcc-complexity" class="quarto-xref">Figure&nbsp;2</a>, it looks like there are clusters of complexity, centred around capital cities.</p></li>
+<li><p><a href="#fig-residuals-map" class="quarto-xref">Figure&nbsp;3</a> shows the residuals from the linear regression.</p></li>
+</ul>
+<div id="cell-fig-residuals-map" class="cell">
+<div class="cell-output-display">
+<div id="fig-residuals-map" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-residuals-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="index_files/figure-html/fig-residuals-map-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: Residuals from linear regression"><img src="index_files/figure-html/fig-residuals-map-1.png" class="img-fluid figure-img" width="576"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-residuals-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Residuals from linear regression
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
 <ul>
 <li>Is economic complexity correlated across space?</li>
 </ul>
+<div id="cell-fig-moran-plot" class="cell">
+<div class="cell-output-display">
+<div id="fig-moran-plot" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-moran-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="index_files/figure-html/fig-moran-plot-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;4: Moran Scatterplot for City Complexity in Australia"><img src="index_files/figure-html/fig-moran-plot-1.png" class="img-fluid figure-img" width="576"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-moran-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Moran Scatterplot for City Complexity in Australia
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
 <ul>
 <li>Global Moran’s I = 0.5007756 with a p.value of 0.</li>
 </ul>
@@ -330,10 +863,10 @@ Figure&nbsp;2: Complexity of Australian Greater Capital City Areas
 <div id="fig-complexity-hot-spots" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-complexity-hot-spots-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="index_files/figure-html/fig-complexity-hot-spots-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: City Complexity hot spots (based on local Moran’s I p.values)"><img src="index_files/figure-html/fig-complexity-hot-spots-1.png" class="img-fluid figure-img" width="576"></a>
+<a href="index_files/figure-html/fig-complexity-hot-spots-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;5: City Complexity hot spots (based on local Moran’s I p.values)"><img src="index_files/figure-html/fig-complexity-hot-spots-1.png" class="img-fluid figure-img" width="576"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-complexity-hot-spots-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: City Complexity hot spots (based on local Moran’s I p.values)
+Figure&nbsp;5: City Complexity hot spots (based on local Moran’s I p.values)
 </figcaption>
 </figure>
 </div>
@@ -827,7 +1360,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","loop":false,"selector":".lightbox","openEffect":"zoom"});
+<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","openEffect":"zoom","descPosition":"bottom","loop":false});
 (function() {
   let previousOnload = window.onload;
   window.onload = () => {
