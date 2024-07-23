@@ -67,6 +67,7 @@ In New Zealand, @ecnz use weighted correlations of local employment shares. Regi
 library(tidyverse)
 library(strayr)
 library(economiccomplexity)
+library(gtsummary)
 library(sf)
 library(tmap)
 library(spdep)
@@ -260,9 +261,75 @@ city_complexity |>
 
 ```
 
+### Regression
+
+-   Independent variables:
+
+    -   share of businesses (state)
+
+    -   population (usual residence)
+
+    -   business entries
+
+```{r}
+data_by_region <- load("data/data_by_region.rda")
+
+sa3 <- read_absmap("sa32021", export_dir = "data")
+
+complexity.reg <- complexity.df |> 
+  distinct(sa3, city_complexity) |> 
+  inner_join(data_by_region, by = c("sa3" = "region")) |> 
+  inner_join(sa3, by = c("sa3" = "sa3_name_2021")) |> 
+  group_by(state_name_2021) |> 
+  mutate(business_share = total_businesses/sum(total_businesses, na.rm = TRUE)) |> 
+  ungroup() 
+
+
+
+fit.ols <- lm(city_complexity ~ total_employment + population + business_share + median_hh_inc, data = complexity.reg)
+
+tbl_regression(fit.ols)
+```
+
 ### Spatial Correlation
 
+-   Based on @fig-gcc-complexity, it looks like there are clusters of complexity, centred around capital cities.
+
+-   @fig-residuals-map shows the residuals from the linear regression.
+
+```{r}
+#| label: fig-residuals-map
+#| fig-cap: Residuals from linear regression
+
+complexity.reg <- complexity.reg |>
+  mutate(olsresid = resid(fit.ols)) |> 
+  st_as_sf()
+
+tm_shape(complexity.reg) + 
+  tm_polygons(fill = "olsresid",
+              fill.scale = tm_scale_intervals(values = "Reds"),
+              fill.legend = tm_legend(outside = TRUE, 
+                                      text.size = 0.8),
+              col = "grey80",
+              lwd = 0.5) +
+  tm_layout(frame = FALSE)
+```
+
 -   Is economic complexity correlated across space?
+
+```{r}
+#| label: fig-moran-plot
+#| fig-cap: Moran Scatterplot for City Complexity in Australia
+
+nb <- poly2nb(city_complexity, queen = TRUE)
+lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
+
+moran.plot(as.numeric(scale(complexity.reg$city_complexity)),
+           listw = lw,
+           xlab = "City Complexity",
+           ylab = "Neighbours City Complexity")
+
+```
 
 ```{r}
 #| label: global-moran
