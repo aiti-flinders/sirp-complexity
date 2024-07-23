@@ -272,7 +272,9 @@ city_complexity |>
     -   business entries
 
 ```{r}
-data_by_region <- load("data/data_by_region.rda")
+#| label: city-complexity-ols
+#| tbl-cap: OLS Regression
+load("data/data_by_region.rda")
 
 sa3 <- read_absmap("sa32021", export_dir = "data")
 
