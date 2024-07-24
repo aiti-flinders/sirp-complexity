@@ -67,34 +67,25 @@ In New Zealand, @ecnz use weighted correlations of local employment shares. Regi
 library(tidyverse)
 library(strayr)
 library(ecomplexity)
-library(gtsummary)
 library(sf)
 library(tmap)
 library(spdep)
 library(spatialreg)
 library(huxtable)
 
-pow <-read_csv("data/sa3-pow-occp-indp-1-digit.csv",
-                skip = 9,
-                n_max = 99360,
-                col_select = c(sa3 = "SA3 (POW)",
-                               anzsic_division = "1-digit level INDP Industry of Employment",
-                               anzsco_major = "1-digit level OCCP Occupation",
-                               count = Count)) |> 
-  filter(!anzsic_division %in% c("Inadequately described", "Not stated",
-                                 "Not applicable", "Total"),
-         !anzsco_major %in% c("Inadequately described", "Not stated",
-                              "Not applicable", "Total"),
-         sa3 != "Total")
+industry_occupation_sa3 <- read_complexitydata("sa3_indp1_occp1", export_dir = "data")
 
-regions <- pow |> 
+regions <- industry_occupation_sa3 |> 
   group_by(x = str_detect(sa3, "POW|Migratory")) |>  
   summarise(count = sum(count)) |> 
   mutate(p = count/sum(count),
          x = ifelse(!x, "included", "excluded")) |> 
   split(f = ~x)
 
-pow_clean <- pow |> 
+sa3 <- read_absmap("sa32021", export_dir = "data")
+
+
+industry_occupation_sa3 <- industry_occupation_sa3 |> 
   filter(!str_detect(sa3, "POW|Migratory")) |> 
   mutate(anzsic_division = fct_inorder(anzsic_division),
          anzsco_major = fct_inorder(anzsco_major), 
@@ -102,40 +93,49 @@ pow_clean <- pow |>
          industry_occupation = fct_inorder(industry_occupation)) |> 
   group_by(sa3, industry_occupation) |> 
   summarise(count = sum(count),
-            .groups = "drop") |> 
-  group_by(sa3) |> 
-  mutate(sa3_size = sum(count)) |> 
-  ungroup() |> 
-  group_by(industry_occupation) |> 
-  mutate(industry_occupation_size = sum(count)) |> 
-  ungroup()
+            .groups = "drop") 
 ```
 
 -   We exclude individuals who identify their place of work as a Migratory - Offshore - Shipping region or as No Fixed Address. Employment in these regions totals `r scales::comma(regions$excluded$count)` or about `r scales::percent(regions$excluded$p)` of the total sample.
 
 -   Following @ecnz, employment is aggregated into industry-occupation pairs, allowing for differentiation between, for example, managers working in agriculture, forestry, and fishing, and managers working in retail trade.
 
--   Dataset covers `r length(unique(pow_clean$sa3))` regions and `r length(unique(pow_clean$industry_occupation))` industry-occupations. @fig-employment-density shows the presence of any level of employment within a region and industry-occupation. As can be seen, there is a high level of employment density across our data, with 88.5% of all combinations of region, industry, and occupation.
+-   Dataset covers `r length(unique(industry_occupation_sa3$sa3))` regions and `r length(unique(industry_occupation_sa3$industry_occupation))` industry-occupations. @fig-employment-density shows the presence of any level of employment within a region and industry-occupation. As can be seen, there is a high level of employment density across our data, with 88.5% of all combinations of region, industry, and occupation.
 
 ```{r}
 #| label: fig-employment-density
 #| fig-cap: "Presence of employment across regions and industry-occupations."
 
-pow_clean |> 
-  mutate(presence = count > 0) |> 
-  ggplot(aes(x = reorder(sa3, -sa3_size),
-             y = reorder(industry_occupation, -industry_occupation_size),
-             fill = presence)) +
-  geom_raster() +
-  labs(x = "Region",
-       y = "Industry-Occupation") +
-  scale_fill_manual(breaks = c(TRUE, FALSE),
-                    values = c("#3182db", "white")) + 
+employment_density <- function(data, region, activity) {
+  region_size = paste0(region, "_size")
+  activity_size = paste0(activity, "_size")
+  
+  data |> 
+    group_by(.data[[region]])  |> 
+    mutate({{region_size}} := sum(count)) |> 
+    group_by(.data[[activity]]) |> 
+    mutate({{activity_size}} := sum(count)) |> 
+    ungroup() |> 
+    mutate(presence = count > 0,
+           {{region}} := fct_infreq(.data[[region]], w = .data[[region_size]]),
+           {{activity}} := fct_infreq(.data[[activity]], w = .data[[activity_size]])) |> 
+    ggplot(aes(x = .data[[region]],
+               y = .data[[activity]],
+               fill = presence)) + 
+    geom_raster() + 
+    scale_fill_manual(breaks = c(TRUE, FALSE),
+                      values = c("#3182db", "white")) + 
   theme(axis.text = element_blank(),
         axis.ticks = element_blank(),
         panel.border = element_rect(fill = NA),
         legend.position = "none") + 
   coord_equal()
+}
+
+employment_density(industry_occupation_sa3, "sa3", "industry_occupation") + 
+  labs(x = "Region",
+       y = "Industry-Occupation")
+
 ```
 
 ### Method
@@ -232,14 +232,23 @@ complexity_nz <- function(m, base_data) {
 ```{r}
 #| label: complexity-place-of-work
 #|
-m <- pow_clean |> 
+m <- industry_occupation_sa3 |> 
   pivot_wider(id_cols = sa3,
               names_from = industry_occupation,
               values_from = count) |> 
   column_to_rownames(var = "sa3") |> 
   as.matrix()
 
-complexity.df <- complexity_nz(m, base_data = pow_clean)
+complexity <- list()
+
+complexity$indp_occp <- complexity_nz(m, base_data = industry_occupation_sa3)
+complexity$indp_occp_rca <- calculate_complexity(industry_occupation_sa3, 
+                                                 region = "sa3",
+                                                 product = "industry_occupation",
+                                                 value = "count", 
+                                                 year = 2021) |> 
+  select(sa3, industry_occupation, count, city_complexity = country_complexity_index, activity_complexity = product_complexity_index)
+  
 ```
 
 @fig-gcc-complexity shows the regional complexity of SA3 regions in Australian Greater Capital City Areas based on 2021 Census data. Complexity is highest in capital cities and surrounding regions.
@@ -248,18 +257,27 @@ complexity.df <- complexity_nz(m, base_data = pow_clean)
 #| label: fig-gcc-complexity
 #| fig-cap: Complexity of Australian Greater Capital City Areas
 
-city_complexity <- complexity.df |> 
-  distinct(sa3, city_complexity) |> 
-  left_join(read_absmap("sa32021",
-                        export_dir = "data"),
-            by = c("sa3" = "sa3_name_2021")) |> 
-  st_as_sf()
-
-city_complexity |> 
+complexity_map <- function(data, layer) {
+  data <- data |> 
+    pluck(layer) |> 
+    distinct(sa3, city_complexity) |> 
+    left_join(sa3, by = c("sa3" = "sa3_name_2021")) |> 
+  st_as_sf() 
+  
+  data |> 
   filter(str_detect(gcc_name_2021, "Australian Capital Territory|Greater")) |> 
   tm_shape() +
-  tm_polygons("city_complexity") +
-  tm_facets("gcc_name_2021")
+  tm_polygons(fill = "city_complexity",
+              fill.scale = tm_scale_continuous(values = "greek", ),
+              fill.legend = tm_legend(title = "City Complexity Index",
+                                      orientation = "landscape")) +
+  tm_facets("gcc_name_2021") +
+  tm_place_legends_bottom()
+  
+  }
+
+
+complexity_map(complexity, "indp_occp")
 
 ```
 
@@ -271,27 +289,29 @@ $ECI_r = CC + log(employment) + log(population) + log(income_{hh}) + log(busines
 #| label: city-complexity-ols
 load("data/data_by_region.rda")
 
-sa3 <- read_absmap("sa32021", export_dir = "data")
 
-complexity.reg <- complexity.df |> 
+complexity.reg <- complexity$indp_occp |> 
   distinct(sa3, city_complexity) |> 
   inner_join(data_by_region, by = c("sa3" = "region")) |> 
   inner_join(sa3, by = c("sa3" = "sa3_name_2021")) |> 
   group_by(state_name_2021) |> 
-  mutate(business_share = total_businesses/sum(total_businesses, na.rm = TRUE)) |>
+  mutate(business_share = total_businesses_no/sum(total_businesses_no, na.rm = TRUE)) |>
   ungroup() |> 
-  mutate(is_cc = fct(ifelse(str_detect(gcc_name_2021, "Greater"), "1", "0")),
-         log_employment = log(total_employment),
-         log_population = log(population),
-         log_hh_income = log(median_hh_inc),
-         log_bus_entries = log(total_business_entries)) |> 
-  filter(!is.na(log_bus_entries),
-         !is.na(business_high_turnover)) |> 
+  mutate(turnover_greater_2m = total_businesses_no - (businesses_with_turnover_of_10m_or_more_no + businesses_with_turnover_of_5m_to_less_than_10m_no + businesses_with_turnover_of_2m_to_less_than_5m_no),
+         turnover_greater_2m_share = turnover_greater_2m/total_businesses_no) |> 
+  drop_na(city_complexity,
+          total_businesses_no,
+          total_business_entries_no,
+          total_business_exits_no,
+          turnover_greater_2m_share,
+          estimated_resident_population_persons_no,
+          business_share,
+          median_equivalised_total_household_income_weekly) |> 
   st_as_sf() 
 
+regression_spec <- parse(text = "city_complexity ~ total_businesses_no + total_business_entries_no + total_business_exits_no + turnover_greater_2m_share + total_persons_employed_aged_15_years_and_over_no + estimated_resident_population_persons_no + business_share + median_equivalised_total_household_income_weekly")[[1]]
 
-
-fit.ols <- lm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover + state_name_2021,
+fit.ols <- lm(regression_spec,
               data = complexity.reg)
 
 
@@ -325,8 +345,9 @@ complexity.reg <- complexity.reg |>
 
 tm_shape(complexity.reg) + 
   tm_polygons(fill = "olsresid",
-              fill.scale = tm_scale_intervals(values = "Reds"),
-              fill.legend = tm_legend(outside = TRUE, 
+              fill.scale = tm_scale_continuous(values = "reds"),
+              fill.legend = tm_legend(outside = TRUE,
+                                      title = "OLS Residuals",
                                       text.size = 0.8),
               col = "grey80",
               lwd = 0.5) +
@@ -350,13 +371,16 @@ The correlation between complexity and lagged complexity is shown in @fig-moran-
 ```{r}
 #| label: city-complexity-spatialreg
 
-fit.lag <- lagsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover,
-              data = complexity.reg,
-                    listw = lw, zero.policy = TRUE)
 
-fit.err <- errorsarlm(city_complexity ~ is_cc + log_employment + log_population + log_hh_income + log_bus_entries + business_share + business_high_turnover,
-              data = complexity.reg,
-                    listw = lw, zero.policy = TRUE)
+fit.lag <- lagsarlm(regression_spec,
+                    data = complexity.reg,
+                    listw = lw, 
+                    zero.policy = TRUE)
+
+fit.err <- errorsarlm(regression_spec,
+                      data = complexity.reg,
+                      listw = lw, 
+                      zero.policy = TRUE)
 
 
 
@@ -409,22 +433,19 @@ tm_shape(complexity.reg) +
 
 ## Conclusion
 
-## Misc
+## Appendix
 
--   correlation between eci calculated differently
+Regional economic complexity can be calculated using other data, including employment by industry and employment by occupation.
 
 ```{r}
 #| label: complexity-industry
-industry_sa3 <- read_complexitydata("sa3_indp4") |> mutate(year = 2021)
-complexity_indp4 <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021)
+industry_sa3 <- read_complexitydata("sa3_indp4", export_dir = "data") |> 
+  mutate(year = 2021)
+occupation_sa3 <- read_complexitydata("sa3_occp4") |> mutate(year = 2021)
 
-complexity_indp4 |> 
-  distinct(sa3, country_complexity_index) |> 
-  full_join(complexity.reg) |> 
-  ggplot(aes(x = country_complexity_index, y = city_complexity)) + 
-  geom_point() +
-  labs(x = "ECI (Employment by Industry)",
-       y = "ECI (Employment by Industry-Occupation")
+complexity <- list()
+complexity$indp4 <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021)  |> mutate(product = "indp4")
+complexity$occp4 <- calculate_complexity(occupation_sa3, region = "sa3", product = "occp", value = "count", year = 2021) |> mutate(product = "occp4")
 
 
 ```
