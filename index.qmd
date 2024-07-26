@@ -106,7 +106,7 @@ industry_occupation_sa3 <- industry_occupation_sa3 |>
 #| label: fig-employment-density
 #| fig-cap: "Presence of employment across regions and industry-occupations."
 
-employment_density <- function(data, region, activity) {
+employment_density <- function(data, region, activity, flip = FALSE) {
   region_size = paste0(region, "_size")
   activity_size = paste0(activity, "_size")
   
@@ -119,8 +119,8 @@ employment_density <- function(data, region, activity) {
     mutate(presence = count > 0,
            {{region}} := fct_infreq(.data[[region]], w = .data[[region_size]]),
            {{activity}} := fct_infreq(.data[[activity]], w = .data[[activity_size]])) |> 
-    ggplot(aes(x = .data[[region]],
-               y = .data[[activity]],
+    ggplot(aes(x = if(!flip) .data[[region]] else .data[[activity]],
+               y = if(!flip) .data[[activity]] else .data[[region]],
                fill = presence)) + 
     geom_raster() + 
     scale_fill_manual(breaks = c(TRUE, FALSE),
@@ -179,6 +179,9 @@ complexity_nz <- function(m, base_data) {
   activity_share <- m / rowSums(m)
   national_share_employment <- rowSums(m) / sum(m)
   
+  region_name <- colnames(base_data)[1]
+  activity_name <- colnames(base_data)[2]
+  
   # Relatedness of activities is the weighted covariance between the local share vectors for activities i and j, 
   # weighted by each regions share of total employment.
   
@@ -220,8 +223,8 @@ complexity_nz <- function(m, base_data) {
   
   message(glue::glue("most complex city: {names(complexity$city[complexity$city == max(complexity$city)])}")) 
   
-  df.complexity <- inner_join(base_data, enframe(complexity$city, name = "sa3", value = "city_complexity")) |> 
-    inner_join(enframe(complexity$activity, name = "industry_occupation", value = "activity_complexity"))
+  df.complexity <- inner_join(base_data, enframe(complexity$city, name = region_name, value = "city_complexity")) |> 
+    inner_join(enframe(complexity$activity, name = activity_name, value = "activity_complexity"))
   return(df.complexity)
 }
 
@@ -298,18 +301,26 @@ complexity.reg <- complexity$indp_occp |>
   mutate(business_share = total_businesses_no/sum(total_businesses_no, na.rm = TRUE)) |>
   ungroup() |> 
   mutate(turnover_greater_2m = total_businesses_no - (businesses_with_turnover_of_10m_or_more_no + businesses_with_turnover_of_5m_to_less_than_10m_no + businesses_with_turnover_of_2m_to_less_than_5m_no),
-         turnover_greater_2m_share = turnover_greater_2m/total_businesses_no) |> 
+         turnover_greater_2m_share = turnover_greater_2m/total_businesses_no,
+         across(c(total_businesses_no, 
+                  total_business_entries_no,
+                  total_business_exits_no,
+                  total_persons_employed_aged_15_years_and_over_no,
+                  estimated_resident_population_persons_no,
+                  median_equivalised_total_household_income_weekly), 
+                .fn = ~log(.x),
+                .names = "log_{.col}")) |> 
   drop_na(city_complexity,
-          total_businesses_no,
-          total_business_entries_no,
-          total_business_exits_no,
+          log_total_businesses_no,
+          log_total_business_entries_no,
+          log_total_business_exits_no,
           turnover_greater_2m_share,
-          estimated_resident_population_persons_no,
+          log_estimated_resident_population_persons_no,
           business_share,
-          median_equivalised_total_household_income_weekly) |> 
+          log_median_equivalised_total_household_income_weekly) |> 
   st_as_sf() 
 
-regression_spec <- parse(text = "city_complexity ~ total_businesses_no + total_business_entries_no + total_business_exits_no + turnover_greater_2m_share + total_persons_employed_aged_15_years_and_over_no + estimated_resident_population_persons_no + business_share + median_equivalised_total_household_income_weekly")[[1]]
+regression_spec <- parse(text = "city_complexity ~ log_total_businesses_no + log_total_business_entries_no + log_total_business_exits_no + turnover_greater_2m_share + log_total_persons_employed_aged_15_years_and_over_no + log_estimated_resident_population_persons_no + business_share + log_median_equivalised_total_household_income_weekly")[[1]]
 
 fit.ols <- lm(regression_spec,
               data = complexity.reg)
@@ -437,17 +448,145 @@ tm_shape(complexity.reg) +
 
 Regional economic complexity can be calculated using other data, including employment by industry and employment by occupation.
 
-```{r}
-#| label: complexity-industry
-industry_sa3 <- read_complexitydata("sa3_indp4", export_dir = "data") |> 
-  mutate(year = 2021)
-occupation_sa3 <- read_complexitydata("sa3_occp4") |> mutate(year = 2021)
+### Other Employment Indicators
 
-complexity <- list()
+```{r}
+#| label: complexity-1d
+industry_sa3 <- read_complexitydata("sa3_indp4", export_dir = "data") |> 
+  mutate(year = 2021) |> 
+  filter(!str_detect(indp, "[A-S]|&&&&|@@@@"))
+occupation_sa3 <- read_complexitydata("sa3_occp4", export_dir = "data") |> mutate(year = 2021)
+
+
 complexity$indp4 <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021)  |> mutate(product = "indp4")
 complexity$occp4 <- calculate_complexity(occupation_sa3, region = "sa3", product = "occp", value = "count", year = 2021) |> mutate(product = "occp4")
 
+```
 
+Employment density is much sparser when using 4-digit industry of employment data. Only `r industry_sa3 |> summarise(mean(count >0)) |> pull() |> scales::comma(scale = 100)` of the industry class-region combinations contain any level of employment.
+
+```{r}
+#| label: fig-employment-density-classifications
+#| fig-cap: "Employment density, SA3 regions: (A) ANZSIC industry class, (B) ANZSCO occupation unit"
+
+library(patchwork)
+
+p1 <- employment_density(industry_sa3, "sa3", "indp") +
+  labs(x = "Region",
+       y = "Industry Class") 
+p2 <- employment_density(occupation_sa3, "sa3", "occp") +
+  labs(x = "Region",
+       y = "Occupation Unit")
+
+wrap_plots(p1, p2) + 
+  plot_annotation(tag_levels = "A")
+
+```
+
+```{r}
+#|label: city-complexity-industry
+
+industry_sa3 <- industry_sa3 |> 
+  group_by(indp) |> 
+  mutate(indp_size = sum(count)) |> 
+  filter(indp_size > 0) |> 
+  ungroup()
+
+m <- industry_sa3 |> 
+  pivot_wider(id_cols = sa3,
+              names_from = indp,
+              values_from = count) |> 
+  column_to_rownames(var = "sa3") |> 
+  as.matrix()
+
+complexity$indp4 <- complexity_nz(m, industry_sa3)
+
+m <- occupation_sa3 |> 
+  pivot_wider(id_cols = sa3,
+              names_from = occp,
+              values_from = count) |> 
+  column_to_rownames(var = "sa3") |> 
+  as.matrix()
+
+complexity$occp4 <- complexity_nz(m, occupation_sa3)
+
+full_join(distinct(complexity$indp4, sa3, city_complexity),
+          distinct(complexity$indp_occp, sa3, city_complexity), by = "sa3") |>
+  ggplot(aes(x = city_complexity.x, y = city_complexity.y)) + 
+  geom_point() + labs(x = "City Complexity (Industry Division)", y = "Economic Complexity (Industry-Occupation)")
+
+
+
+```
+
+```{r}
+#| label: regression-other-eci
+
+complexity.reg.all <- complexity.reg |> 
+  inner_join(distinct(complexity$indp4, sa3, indp_complexity = city_complexity), by = "sa3") |> 
+  inner_join(distinct(complexity$occp4, sa3, occp_complexity = city_complexity))
+
+reg_spec <- parse(text = "indp_complexity ~ log_total_businesses_no + log_total_business_entries_no + log_total_business_exits_no + turnover_greater_2m_share + log_total_persons_employed_aged_15_years_and_over_no + log_estimated_resident_population_persons_no + business_share + log_median_equivalised_total_household_income_weekly")[[1]]
+
+fit.ols <- lm(reg_spec, data = complexity.reg.all)
+
+```
+
+### Smaller Areas
+
+```{r}
+#| label: fig-employment-density-sa2
+#| fig-cap: Employment density, Industry-occupation, SA2 regions
+
+
+industry_occupation_sa2 <- read_complexitydata("sa2_indp1_occp1", export_dir = "data")|> 
+  filter(!str_detect(sa2, "POW|Migratory")) |> 
+  mutate(anzsic_division = fct_inorder(anzsic_division), 
+         anzsco_major = fct_inorder(anzsco_major), 
+         industry_occupation = paste0(anzsic_division, " (", anzsco_major, ")"),
+         industry_occupation = fct_inorder(industry_occupation)) |> 
+  group_by(sa2, industry_occupation) |> 
+  summarise(count = sum(count), .groups = "drop") |> 
+  group_by(sa2) |> 
+  mutate(sa2_size = sum(count)) |> 
+  group_by(industry_occupation) |> 
+  mutate(industry_occupation_size = sum(count)) |> 
+  ungroup() |> 
+  filter(sa2_size > 0,
+         industry_occupation_size > 0)
+
+employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip = TRUE) + 
+  labs(x = "Industry-Occupation",
+       y = "Region") +
+  coord_equal(ratio = 0.25)
+
+```
+
+```{r}
+#| label: sa2-indp-occp-complexity
+
+m <- industry_occupation_sa2 |> 
+  pivot_wider(id_cols = sa2, 
+              names_from = industry_occupation,
+              values_from = count) |> 
+  column_to_rownames(var = "sa2") |> 
+  as.matrix()
+
+complexity_small <- complexity_nz(m, industry_occupation_sa2)
+
+complexity_small |> 
+  distinct(sa2, city_complexity) |> 
+  inner_join(read_absmap("sa22021", export_dir = "data"), 
+             by = c("sa2" = "sa2_name_2021")) |> 
+  st_as_sf() |> 
+  filter(str_detect(gcc_name_2021, "Australian Capital Territory|Greater")) |>
+  tm_shape() +
+  tm_polygons(fill = "city_complexity",col = "grey90",lwd = 0.5,
+              fill.scale = tm_scale_continuous(values = 'greek'), 
+              fill.legend = tm_legend(title = "City Complexity Index",
+                                      orientation = "landscape"))+ 
+  tm_facets("gcc_name_2021") + 
+  tm_place_legends_bottom()
 ```
 
 ## References {.unnumbered}
