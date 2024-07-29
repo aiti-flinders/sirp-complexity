@@ -539,9 +539,8 @@ Following @mealy2022 analysis of green economic complexity, we can apply an adva
 
 ```{r}
 #| label: tbl-advanced-manufacturing
-
- tibble::tribble(
-   ~ANZSIC.Industry.Class,                                                           ~Description,
+am <-  tibble::tribble(
+   ~indp,                                                           ~description,
                     1811L,                                         "Industrial gas manufacturing",
                     1812L,                                 "Basic organic chemical manufacturing",
                     1813L,                               "Basic inorganic chemical manufacturing",
@@ -585,10 +584,34 @@ Following @mealy2022 analysis of green economic complexity, we can apply an adva
                     2491L,                         "Lifting and handling equipment manufacturing",
                     2499L,                          "Other machinery and equipment manufacturing"
    ) |> 
-  mutate(ANZSIC.Industry.Class = as.character(ANZSIC.Industry.Class)) |> 
-  flextable()
+  mutate(indp = as.character(indp)) 
+
+flextable(am)
 
 
+
+
+```
+
+```{r}
+#| label: city-complexity-advanced-manufacturing-complexity
+
+amci <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021) |> 
+  mutate(m = as.numeric(rca >= 1),
+         is_am = as.numeric(indp %in% am$indp),
+         pci = scales::rescale(product_complexity_index, to = c(0, 1)),
+         p = m * is_am) |> 
+  group_by(sa3) |> 
+  summarise(amci = sum(pci * p),
+            amp = sum((1-p)*density*pci)/sum(1-p),
+            amce = sum(count*is_am)) |> 
+  mutate(across(c(amci, amp), ~ (.x - mean(.x))/sd(.x))) 
+
+complexity.reg <- complexity.reg |> 
+  inner_join(amci)
+
+
+lm.amci <- lm(city_complexity ~ median_age_persons_years + estimated_resident_population_persons_no + total_business_entries_no + total_business_exits_no + business_share + amci + amp, data = complexity.reg)
 
 
 ```
@@ -625,6 +648,7 @@ employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip =
 
 ```{r}
 #| label: sa2-indp-occp-complexity
+#| execute: false
 
 m <- industry_occupation_sa2 |> 
   pivot_wider(id_cols = sa2, 
@@ -644,7 +668,7 @@ complexity_small |>
   tm_shape() +
   tm_polygons(fill = "city_complexity",
               col = "grey90",
-              lwd = 0.15,
+              lwd = 0.05,
               fill.scale = tm_scale_continuous(values = 'greek'), 
               fill.legend = tm_legend(title = "City Complexity Index",
                                       orientation = "landscape"))+ 
