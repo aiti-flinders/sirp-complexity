@@ -72,6 +72,7 @@ library(tmap)
 library(spdep)
 library(spatialreg)
 library(huxtable)
+library(flextable)
 
 industry_occupation_sa3 <- read_complexitydata("sa3_indp1_occp1", export_dir = "data")
 
@@ -532,6 +533,66 @@ fit.ols <- lm(reg_spec, data = complexity.reg.all)
 
 ```
 
+### Specific Industries
+
+Following @mealy2022 analysis of green economic complexity, we can apply an advanced manufacturing lens to determine advanced manufacturing complexities.
+
+```{r}
+#| label: tbl-advanced-manufacturing
+
+ tibble::tribble(
+   ~ANZSIC.Industry.Class,                                                           ~Description,
+                    1811L,                                         "Industrial gas manufacturing",
+                    1812L,                                 "Basic organic chemical manufacturing",
+                    1813L,                               "Basic inorganic chemical manufacturing",
+                    1821L,                   "Synthetic resin and synthetic rubber manufacturing",
+                    1829L,                                    "Other basic polymer manufacturing",
+                    1831L,                                             "Fertiliser manufacturing",
+                    1832L,                                              "Pesticide manufacturing",
+                    1841L,             "Human pharmaceutical and medicinal product manufacturing",
+                    1842L,        "Veterinary pharmaceutical and medicinal product manufacturing",
+                    1851L,                                      "Cleaning compound manufacturing",
+                    1852L,                      "Cosmetic and toiletry preparation manufacturing",
+                    1891L,                          "Photographic chemical product manufacturing",
+                    1892L,                                              "Explosive manufacturing",
+                    1899L,                    "Other basic chemical product manufacturing n.e.c.",
+                    2311L,                                          "Motor vehicle manufacturing",
+                    2312L,                         "Motor vehicle body and trailer manufacturing",
+                    2313L,                        "Automotive electrical component manufacturing",
+                    2319L,                              "Other motor vehicle parts manufacturing",
+                    2391L,                                     "Shipbuilding and repair services",
+                    2392L,                                     "Boatbuilding and repair services",
+                    2393L,              "Railway rolling stock manufacturing and repair services",
+                    2394L,                           "Aircraft manufacturing and repair services",
+                    2399L,                       "Other transport equipment manufacturing n.e.c.",
+                    2411L,         "Photographic, optical and ophthalmic equipment manufacturing",
+                    2412L,                         "Medical and surgical equipment manufacturing",
+                    2419L,            "Other professional and scientific equipment manufacturing",
+                    2421L,               "Computer and electronic office equipment manufacturing",
+                    2422L,                                "Communication equipment manufacturing",
+                    2429L,                             "Other electronic equipment manufacturing",
+                    2431L,                                "Electric cable and wire manufacturing",
+                    2432L,                            "Electric lighting equipment manufacturing",
+                    2439L,                             "Other electrical equipment manufacturing",
+                    2441L,                                    "Whiteware appliance manufacturing",
+                    2449L,                               "Other domestic appliance manufacturing",
+                    2451L,                                    "Pump and compressor manufacturing",
+                    2452L, "Fixed space heating, cooling and ventilation equipment manufacturing",
+                    2461L,                   "Agricultural machinery and equipment manufacturing",
+                    2462L,                      "Mining and construction machinery manufacturing",
+                    2463L,                           "Machine tool parts and parts manufacturing",
+                    2469L,              "Other specialised machinery and equipment manufacturing",
+                    2491L,                         "Lifting and handling equipment manufacturing",
+                    2499L,                          "Other machinery and equipment manufacturing"
+   ) |> 
+  mutate(ANZSIC.Industry.Class = as.character(ANZSIC.Industry.Class)) |> 
+  flextable()
+
+
+
+
+```
+
 ### Smaller Areas
 
 ```{r}
@@ -581,7 +642,9 @@ complexity_small |>
   st_as_sf() |> 
   filter(str_detect(gcc_name_2021, "Australian Capital Territory|Greater")) |>
   tm_shape() +
-  tm_polygons(fill = "city_complexity",col = "grey90",lwd = 0.5,
+  tm_polygons(fill = "city_complexity",
+              col = "grey90",
+              lwd = 0.15,
               fill.scale = tm_scale_continuous(values = 'greek'), 
               fill.legend = tm_legend(title = "City Complexity Index",
                                       orientation = "landscape"))+ 
