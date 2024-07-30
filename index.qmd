@@ -72,6 +72,7 @@ library(tmap)
 library(spdep)
 library(spatialreg)
 library(huxtable)
+library(flextable)
 
 industry_occupation_sa3 <- read_complexitydata("sa3_indp1_occp1", export_dir = "data")
 
@@ -451,7 +452,7 @@ Regional economic complexity can be calculated using other data, including emplo
 ### Other Employment Indicators
 
 ```{r}
-#| label: complexity-1d
+#| label: complexity-indp-class
 industry_sa3 <- read_complexitydata("sa3_indp4", export_dir = "data") |> 
   mutate(year = 2021) |> 
   filter(!str_detect(indp, "[A-S]|&&&&|@@@@"))
@@ -532,6 +533,90 @@ fit.ols <- lm(reg_spec, data = complexity.reg.all)
 
 ```
 
+### Specific Industries
+
+Following @mealy2022 analysis of green economic complexity, we can apply an advanced manufacturing lens to determine advanced manufacturing complexities.
+
+```{r}
+#| label: advanced-manufacturing
+#|
+am <-  tibble::tribble(
+   ~indp,                                                           ~description,
+                    1811L,                                         "Industrial gas manufacturing",
+                    1812L,                                 "Basic organic chemical manufacturing",
+                    1813L,                               "Basic inorganic chemical manufacturing",
+                    1821L,                   "Synthetic resin and synthetic rubber manufacturing",
+                    1829L,                                    "Other basic polymer manufacturing",
+                    1831L,                                             "Fertiliser manufacturing",
+                    1832L,                                              "Pesticide manufacturing",
+                    1841L,             "Human pharmaceutical and medicinal product manufacturing",
+                    1842L,        "Veterinary pharmaceutical and medicinal product manufacturing",
+                    1851L,                                      "Cleaning compound manufacturing",
+                    1852L,                      "Cosmetic and toiletry preparation manufacturing",
+                    1891L,                          "Photographic chemical product manufacturing",
+                    1892L,                                              "Explosive manufacturing",
+                    1899L,                    "Other basic chemical product manufacturing n.e.c.",
+                    2311L,                                          "Motor vehicle manufacturing",
+                    2312L,                         "Motor vehicle body and trailer manufacturing",
+                    2313L,                        "Automotive electrical component manufacturing",
+                    2319L,                              "Other motor vehicle parts manufacturing",
+                    2391L,                                     "Shipbuilding and repair services",
+                    2392L,                                     "Boatbuilding and repair services",
+                    2393L,              "Railway rolling stock manufacturing and repair services",
+                    2394L,                           "Aircraft manufacturing and repair services",
+                    2399L,                       "Other transport equipment manufacturing n.e.c.",
+                    2411L,         "Photographic, optical and ophthalmic equipment manufacturing",
+                    2412L,                         "Medical and surgical equipment manufacturing",
+                    2419L,            "Other professional and scientific equipment manufacturing",
+                    2421L,               "Computer and electronic office equipment manufacturing",
+                    2422L,                                "Communication equipment manufacturing",
+                    2429L,                             "Other electronic equipment manufacturing",
+                    2431L,                                "Electric cable and wire manufacturing",
+                    2432L,                            "Electric lighting equipment manufacturing",
+                    2439L,                             "Other electrical equipment manufacturing",
+                    2441L,                                    "Whiteware appliance manufacturing",
+                    2449L,                               "Other domestic appliance manufacturing",
+                    2451L,                                    "Pump and compressor manufacturing",
+                    2452L, "Fixed space heating, cooling and ventilation equipment manufacturing",
+                    2461L,                   "Agricultural machinery and equipment manufacturing",
+                    2462L,                      "Mining and construction machinery manufacturing",
+                    2463L,                           "Machine tool parts and parts manufacturing",
+                    2469L,              "Other specialised machinery and equipment manufacturing",
+                    2491L,                         "Lifting and handling equipment manufacturing",
+                    2499L,                          "Other machinery and equipment manufacturing"
+   ) |>
+  mutate(indp = as.character(indp))
+
+
+
+
+
+
+```
+
+```{r}
+#| label: city-complexity-advanced-manufacturing-complexity
+
+amci <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021) |>
+  mutate(m = as.numeric(rca >= 1),
+         is_am = as.numeric(indp %in% am$indp),
+         pci = scales::rescale(product_complexity_index, to = c(0, 1)),
+         p = m * is_am) |>
+  group_by(sa3) |>
+  summarise(amci = sum(pci * p),
+            amp = sum((1-p)*density*pci)/sum(1-p),
+            amce = sum(count*is_am)) |>
+  mutate(across(c(amci, amp), ~ (.x - mean(.x))/sd(.x)))
+
+complexity.reg <- complexity.reg |>
+  inner_join(amci)
+
+
+lm.amci <- lm(city_complexity ~ median_age_persons_years + estimated_resident_population_persons_no + total_business_entries_no + total_business_exits_no + business_share + amci + amp, data = complexity.reg)
+
+
+```
+
 ### Smaller Areas
 
 ```{r}
@@ -539,23 +624,23 @@ fit.ols <- lm(reg_spec, data = complexity.reg.all)
 #| fig-cap: Employment density, Industry-occupation, SA2 regions
 
 
-industry_occupation_sa2 <- read_complexitydata("sa2_indp1_occp1", export_dir = "data")|> 
-  filter(!str_detect(sa2, "POW|Migratory")) |> 
-  mutate(anzsic_division = fct_inorder(anzsic_division), 
-         anzsco_major = fct_inorder(anzsco_major), 
+industry_occupation_sa2 <- read_complexitydata("sa2_indp1_occp1", export_dir = "data")|>
+  filter(!str_detect(sa2, "POW|Migratory")) |>
+  mutate(anzsic_division = fct_inorder(anzsic_division),
+         anzsco_major = fct_inorder(anzsco_major),
          industry_occupation = paste0(anzsic_division, " (", anzsco_major, ")"),
-         industry_occupation = fct_inorder(industry_occupation)) |> 
-  group_by(sa2, industry_occupation) |> 
-  summarise(count = sum(count), .groups = "drop") |> 
-  group_by(sa2) |> 
-  mutate(sa2_size = sum(count)) |> 
-  group_by(industry_occupation) |> 
-  mutate(industry_occupation_size = sum(count)) |> 
-  ungroup() |> 
+         industry_occupation = fct_inorder(industry_occupation)) |>
+  group_by(sa2, industry_occupation) |>
+  summarise(count = sum(count), .groups = "drop") |>
+  group_by(sa2) |>
+  mutate(sa2_size = sum(count)) |>
+  group_by(industry_occupation) |>
+  mutate(industry_occupation_size = sum(count)) |>
+  ungroup() |>
   filter(sa2_size > 0,
          industry_occupation_size > 0)
 
-employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip = TRUE) + 
+employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip = TRUE) +
   labs(x = "Industry-Occupation",
        y = "Region") +
   coord_equal(ratio = 0.25)
@@ -564,28 +649,28 @@ employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip =
 
 ```{r}
 #| label: sa2-indp-occp-complexity
-
-m <- industry_occupation_sa2 |> 
-  pivot_wider(id_cols = sa2, 
+m <- industry_occupation_sa2 |>
+  pivot_wider(id_cols = sa2,
               names_from = industry_occupation,
-              values_from = count) |> 
-  column_to_rownames(var = "sa2") |> 
+              values_from = count) |>
+  column_to_rownames(var = "sa2") |>
   as.matrix()
 
 complexity_small <- complexity_nz(m, industry_occupation_sa2)
 
-complexity_small |> 
-  distinct(sa2, city_complexity) |> 
-  inner_join(read_absmap("sa22021", export_dir = "data"), 
-             by = c("sa2" = "sa2_name_2021")) |> 
-  st_as_sf() |> 
+complexity_small |>
+  distinct(sa2, city_complexity) |>
+  inner_join(read_absmap("sa22021", export_dir = "data"),
+             by = c("sa2" = "sa2_name_2021")) |>
+  st_as_sf() |>
   filter(str_detect(gcc_name_2021, "Australian Capital Territory|Greater")) |>
   tm_shape() +
-  tm_polygons(fill = "city_complexity",col = "grey90",lwd = 0.5,
-              fill.scale = tm_scale_continuous(values = 'greek'), 
+  tm_polygons(fill = "city_complexity",
+              lwd = 0.05,
+              fill.scale = tm_scale_continuous(values = 'greek'),
               fill.legend = tm_legend(title = "City Complexity Index",
-                                      orientation = "landscape"))+ 
-  tm_facets("gcc_name_2021") + 
+                                      orientation = "landscape"))+
+  tm_facets("gcc_name_2021") +
   tm_place_legends_bottom()
 ```
 
