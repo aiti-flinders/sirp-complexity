@@ -452,7 +452,7 @@ Regional economic complexity can be calculated using other data, including emplo
 ### Other Employment Indicators
 
 ```{r}
-#| label: complexity-1d
+#| label: complexity-indp-class
 industry_sa3 <- read_complexitydata("sa3_indp4", export_dir = "data") |> 
   mutate(year = 2021) |> 
   filter(!str_detect(indp, "[A-S]|&&&&|@@@@"))
@@ -538,7 +538,8 @@ fit.ols <- lm(reg_spec, data = complexity.reg.all)
 Following @mealy2022 analysis of green economic complexity, we can apply an advanced manufacturing lens to determine advanced manufacturing complexities.
 
 ```{r}
-#| label: tbl-advanced-manufacturing
+#| label: advanced-manufacturing
+#|
 am <-  tibble::tribble(
    ~indp,                                                           ~description,
                     1811L,                                         "Industrial gas manufacturing",
@@ -583,10 +584,10 @@ am <-  tibble::tribble(
                     2469L,              "Other specialised machinery and equipment manufacturing",
                     2491L,                         "Lifting and handling equipment manufacturing",
                     2499L,                          "Other machinery and equipment manufacturing"
-   ) |> 
-  mutate(indp = as.character(indp)) 
+   ) |>
+  mutate(indp = as.character(indp))
 
-flextable(am)
+
 
 
 
@@ -596,18 +597,18 @@ flextable(am)
 ```{r}
 #| label: city-complexity-advanced-manufacturing-complexity
 
-amci <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021) |> 
+amci <- calculate_complexity(industry_sa3, region = "sa3", product = "indp", value = "count", year = 2021) |>
   mutate(m = as.numeric(rca >= 1),
          is_am = as.numeric(indp %in% am$indp),
          pci = scales::rescale(product_complexity_index, to = c(0, 1)),
-         p = m * is_am) |> 
-  group_by(sa3) |> 
+         p = m * is_am) |>
+  group_by(sa3) |>
   summarise(amci = sum(pci * p),
             amp = sum((1-p)*density*pci)/sum(1-p),
-            amce = sum(count*is_am)) |> 
-  mutate(across(c(amci, amp), ~ (.x - mean(.x))/sd(.x))) 
+            amce = sum(count*is_am)) |>
+  mutate(across(c(amci, amp), ~ (.x - mean(.x))/sd(.x)))
 
-complexity.reg <- complexity.reg |> 
+complexity.reg <- complexity.reg |>
   inner_join(amci)
 
 
@@ -623,23 +624,23 @@ lm.amci <- lm(city_complexity ~ median_age_persons_years + estimated_resident_po
 #| fig-cap: Employment density, Industry-occupation, SA2 regions
 
 
-industry_occupation_sa2 <- read_complexitydata("sa2_indp1_occp1", export_dir = "data")|> 
-  filter(!str_detect(sa2, "POW|Migratory")) |> 
-  mutate(anzsic_division = fct_inorder(anzsic_division), 
-         anzsco_major = fct_inorder(anzsco_major), 
+industry_occupation_sa2 <- read_complexitydata("sa2_indp1_occp1", export_dir = "data")|>
+  filter(!str_detect(sa2, "POW|Migratory")) |>
+  mutate(anzsic_division = fct_inorder(anzsic_division),
+         anzsco_major = fct_inorder(anzsco_major),
          industry_occupation = paste0(anzsic_division, " (", anzsco_major, ")"),
-         industry_occupation = fct_inorder(industry_occupation)) |> 
-  group_by(sa2, industry_occupation) |> 
-  summarise(count = sum(count), .groups = "drop") |> 
-  group_by(sa2) |> 
-  mutate(sa2_size = sum(count)) |> 
-  group_by(industry_occupation) |> 
-  mutate(industry_occupation_size = sum(count)) |> 
-  ungroup() |> 
+         industry_occupation = fct_inorder(industry_occupation)) |>
+  group_by(sa2, industry_occupation) |>
+  summarise(count = sum(count), .groups = "drop") |>
+  group_by(sa2) |>
+  mutate(sa2_size = sum(count)) |>
+  group_by(industry_occupation) |>
+  mutate(industry_occupation_size = sum(count)) |>
+  ungroup() |>
   filter(sa2_size > 0,
          industry_occupation_size > 0)
 
-employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip = TRUE) + 
+employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip = TRUE) +
   labs(x = "Industry-Occupation",
        y = "Region") +
   coord_equal(ratio = 0.25)
@@ -648,31 +649,28 @@ employment_density(industry_occupation_sa2, "sa2", "industry_occupation", flip =
 
 ```{r}
 #| label: sa2-indp-occp-complexity
-#| execute: false
-
-m <- industry_occupation_sa2 |> 
-  pivot_wider(id_cols = sa2, 
+m <- industry_occupation_sa2 |>
+  pivot_wider(id_cols = sa2,
               names_from = industry_occupation,
-              values_from = count) |> 
-  column_to_rownames(var = "sa2") |> 
+              values_from = count) |>
+  column_to_rownames(var = "sa2") |>
   as.matrix()
 
 complexity_small <- complexity_nz(m, industry_occupation_sa2)
 
-complexity_small |> 
-  distinct(sa2, city_complexity) |> 
-  inner_join(read_absmap("sa22021", export_dir = "data"), 
-             by = c("sa2" = "sa2_name_2021")) |> 
-  st_as_sf() |> 
+complexity_small |>
+  distinct(sa2, city_complexity) |>
+  inner_join(read_absmap("sa22021", export_dir = "data"),
+             by = c("sa2" = "sa2_name_2021")) |>
+  st_as_sf() |>
   filter(str_detect(gcc_name_2021, "Australian Capital Territory|Greater")) |>
   tm_shape() +
   tm_polygons(fill = "city_complexity",
-              col = "grey90",
               lwd = 0.05,
-              fill.scale = tm_scale_continuous(values = 'greek'), 
+              fill.scale = tm_scale_continuous(values = 'greek'),
               fill.legend = tm_legend(title = "City Complexity Index",
-                                      orientation = "landscape"))+ 
-  tm_facets("gcc_name_2021") + 
+                                      orientation = "landscape"))+
+  tm_facets("gcc_name_2021") +
   tm_place_legends_bottom()
 ```
 
